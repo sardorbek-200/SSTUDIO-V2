@@ -1,0 +1,34 @@
+# WEB FRAMEWORK
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+
+# DATABASE
+sqlalchemy==2.0.27
+asyncpg==0.29.0
+
+# SECURITY
+passlib[argon2]==1.7.4
+python-jose[cryptography]==3.3.0 
+python-multipart==0.0.9
+argon2-cffi
+
+# SETTINGS
+pydantic==2.6.3
+pydantic-settings==2.2.1
+
+# UTILITIES
+python-dotenv
+
+# AI API
+google-genai
+
+# TELEGRAM API
+aiogram
+
+# HTML READER
+jinja2
+
+bcrypt
+requests
+python-docx
+markdown

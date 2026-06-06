@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% block style %}
+<style>
+    .play-container {
+        width: 100%;
+        min-height: 100vh;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+    }
+
+    .play-header {
+        position: relative;
+        height: fit-content;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .play-content {
+        display: flex;
+        flex: 1;
+        gap: 50px;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    nav h1 {
+        font-size: 36px;
+        height: 36px;
+        max-width: 300px;
+        margin: 0;
+    }
+
+    /* Antifrod ogohlantirish yozuvi stili */
+    .cheating-warning {
+        background-color: rgba(221, 10, 10, 0.15);
+        color: #ff4d4d;
+        border: 1px solid #ff4d4d;
+        border-radius: 10px;
+        padding: 8px 15px;
+        font-size: 14px;
+        font-weight: bold;
+        display: none;
+        /* Faqat test boshlanganda chiqadi */
+        animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.6;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .status-test {
+        height: 100%;
+        background-color: rgba(45, 128, 184, 0.3);
+        border: blue 3px solid;
+        border-radius: 18px;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .status-test.active {
+        background-color: rgba(0, 230, 10, 0.3);
+        border: green 3px solid;
+    }
+
+    .play-header button {
+        background-color: rgba(221, 10, 10, 0.8);
+        color: white;
+        border: 2px solid red;
+        border-radius: 18px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .play-header button:hover {
+        transform: scale(1.05);
+    }
+
+    #frame {
+        flex: 3;
+        min-height: 300px;
+        padding: 30px;
+    }
+
+    .count {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .q-item {
+        background-color: rgba(45, 128, 184, 0.3);
+        border: 1px solid rgba(45, 128, 184, 0.6);
+        border-radius: 8px;
+        height: 45px;
+        width: 45px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .q-item:hover {
+        background-color: rgba(45, 128, 184, 0.5);
+    }
+
+    .q-item.blue {
+        background-color: #007bff !important;
+        color: white;
+        border-color: #0056b3;
+    }
+
+    .q-item.green {
+        background-color: #28a745 !important;
+        color: white;
+        border-color: #1e7e34;
+    }
+
+    .buttons-in-the button {
+        height: fit-content;
+        border: none;
+        outline: none;
+        padding: 10px 20px;
+        border-radius: 40px;
+        color: white;
+        cursor: pointer;
+    }
+
+    .options label {
+        display: block;
+        padding: 10px;
+        margin: 5px 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .options label:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Radio inputning o'zini butkul yashiramiz */
+    .options input[type="radio"] {
+        display: none;
+    }
+
+    /* Labelni chiroyli qutiga (card) aylantiramiz */
+    .options label {
+        display: block;
+        padding: 15px 20px;
+        margin: 10px 0;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.25s ease;
+        user-select: none;
+        /* Matnni tasodifan belgilab yubormaslik uchun */
+    }
+
+    /* Sichqoncha olib borilganda (Hover) effekt */
+    .options label:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(45, 128, 184, 0.6);
+        transform: translateY(-2px);
+        /* Kichkina yuqoriga sakrash effekti */
+    }
+
+    /* Element ichidagi yashirilgan radio input BELGILANGANIDA uning labelini o'zgartirish */
+    .options label:has(input[type="radio"]:checked) {
+        background: rgba(40, 167, 69, 0.2) !important;
+        /* Yashil shaffof fon */
+        border-color: #28a745 !important;
+        /* To'q yashil chegara */
+        box-shadow: 0 0 12px rgba(40, 167, 69, 0.4);
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="play-container">
+    <nav class="play-header">
+        <h1>{{ test.title }}</h1>
+        <!-- Ogohlantirish matni -->
+        <div class="cheating-warning" id="warning-text">
+            ⚠️ Diqqat: Agar boshqa oynaga o‘tsangiz, test avtomatik ravishda yakunlanadi!
+        </div>
+        <div class="status-test"><span>Pending...</span></div>
+        <button onclick="finishTest()">Testni Yakunlash</button>
+    </nav>
+    <div class="play-content">
+        <div class="questions glass-card" id="frame">
+            <h1>Assalomu Aleykum Hurmatli {{ username }} </h1>
+            <h2>Siz Haqiqatdan ham {{ test.title }} testida qatnashmoqchimisiz?</h2>
+            <div style="display: flex;flex-wrap: wrap;margin: 50px;gap: 10px;justify-content: center;align-items: top;"
+                class="buttons-in-the">
+                <button style="background-color: grey;" onclick="window.location.href = '/app/quizer'">Orqaga</button>
+                <button style="background-color: green;" onclick="start()">Testni Boshlash</button>
+            </div>
+            <p>{{ test.description }}</p>
+        </div>
+        <div class="count glass-card" id="frame2">
+            <div style="color: gray;">Test boshlanmadi</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    const testId = "{{ test.id }}";
+    let currentQuestions = [];
+    let activeIndex = 0;
+    let savedAnswers = {};
+    let testActive = false; // Test holatini kuzatish uchun flag
+    let wakeLock = null; // Ekranni doimo yoniq saqlash ob'ekti
+
+    // 1. Ekran o'chib qolmasligini ta'minlash (Always On Rejimi)
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log("Always On rejimi faollashdi (Ekran o'chmaydi).");
+            }
+        } catch (err) {
+            console.warn(`Wake Lock xatoligi: ${err.name}, ${err.message}`);
+        }
+    }
+
+    // 2. Boshqa oynaga o'tishni kuzatish (Antifrod tizimi)
+    function handleVisibilityChange() {
+        if (document.hidden && testActive) {
+            // Agar test faol bo'lsa va bola boshqa tab yoki oynaga o'tsa
+            alert("Siz qoidalarni buzdingiz va boshqa oynaga o‘tdingiz! Test avtomatik yakunlanadi.");
+            autoFinishTest();
+        }
+    }
+    // Testni boshlash
+    async function start() {
+        const response = await fetch(`/app/quizer/test/${testId}/questions`);
+        const data = await response.json();
+
+        // 1. Agar test allaqachon yakunlangan bo'lsa, ma'lumot bermaymiz va ogohlantiramiz
+        if (data.status === "already_finished" || data.error === "already_finished") {
+            document.getElementById('frame').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h1 style="color: #ff4d4d;">⚠️ Kirish taqiqlanadi!</h1>
+                    <h2>Siz bu testni allaqachon yakunlagansiz.</h2>
+                    <p style="color: gray; margin-top: 10px;">Bitta testni faqat bir marta topshirishga ruxsat berilgan.</p>
+                    <button style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 20px;" 
+                            onclick="window.location.href = '/app/quizer'">
+                        Guruhga qaytish
+                    </button>
+                </div>
+            `;
+            document.getElementById('frame2').innerHTML = `<div style="color: red; font-weight: bold;">Taqiqlangan</div>`;
+            return; // Funksiyani shu joyda to'xtatamiz, savollar yuklanmaydi!
+        }
+
+        // 2. Agar test hali topshirilmagan bo'lsa va savollar bo'lsa, odatdagidek davom etadi
+        if (data.questions && data.questions.length > 0) {
+            currentQuestions = data.questions;
+            activeIndex = 0;
+            testActive = true;
+
+            // Ogohlantirish matnini ko'rsatish
+            document.getElementById('warning-text').style.display = 'block';
+
+            // Ekran o'chmasligini yoqish
+            requestWakeLock();
+
+            // Oynadan chiqib ketish hodisasini tinglashni boshlash
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Statusni yangilash
+            document.querySelector('.status-test').innerHTML = "<span>Active</span>";
+            document.querySelector('.status-test').classList.add('active');
+
+            renderCounters();
+            showQuestion(activeIndex);
+        } else {
+            document.getElementById('frame').innerHTML = "<h1>Savollar topilmadi yoki xatolik yuz berdi.</h1>";
+        }
+    }
+    function renderCounters() {
+        const countframe = document.getElementById("frame2");
+        let giver = "";
+
+        currentQuestions.forEach((q, index) => {
+            let statusClass = "";
+            if (index === activeIndex) {
+                statusClass = "blue";
+            } else if (savedAnswers[q.id]) {
+                statusClass = "green";
+            }
+            giver += `<div class="q-item ${statusClass}" id="q_num_${q.id}" onclick="goToQuestion(${index})">${index + 1}</div>`;
+        });
+
+        countframe.innerHTML = giver;
+    }
+
+    // Savolni ekranga chiqarish
+    function showQuestion(index) {
+        const frame = document.getElementById('frame');
+        const q = currentQuestions[index];
+        const currentAns = savedAnswers[q.id] || "";
+
+        frame.innerHTML = `
+            <div class="question-card">
+                <h2>Savol ${index + 1} / ${currentQuestions.length}</h2>
+                <hr style="margin-bottom: 20px; border: 0.5px solid rgba(255,255,255,0.2);">
+                <h3>${q.text}</h3>
+                <div class="options" style="margin-top: 20px;">
+                    <label><input type="radio" name="q${q.id}" value="A" ${currentAns === 'A' ? 'checked' : ''} onclick="saveOption(${q.id}, 'A')"> A) ${q.options[0]}</label>
+                    <label><input type="radio" name="q${q.id}" value="B" ${currentAns === 'B' ? 'checked' : ''} onclick="saveOption(${q.id}, 'B')"> B) ${q.options[1]}</label>
+                    <label><input type="radio" name="q${q.id}" value="C" ${currentAns === 'C' ? 'checked' : ''} onclick="saveOption(${q.id}, 'C')"> C) ${q.options[2]}</label>
+                    <label><input type="radio" name="q${q.id}" value="D" ${currentAns === 'D' ? 'checked' : ''} onclick="saveOption(${q.id}, 'D')"> D) ${q.options[3]}</label>
+                </div>
+                <div style="margin-top: 30px; display: flex; gap: 10px;" class="buttons-in-the">
+                    <button style="background-color: #6c757d;" onclick="prevQuestion()" ${index === 0 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>Orqaga</button>
+                    <button style="background-color: #007bff;" onclick="nextQuestion()" ${index === currentQuestions.length - 1 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>Keyingisi</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function goToQuestion(index) {
+        activeIndex = index;
+        renderCounters();
+        showQuestion(activeIndex);
+    }
+
+    function nextQuestion() {
+        if (activeIndex < currentQuestions.length - 1) {
+            activeIndex++;
+            renderCounters();
+            showQuestion(activeIndex);
+        }
+    }
+
+    function prevQuestion() {
+        if (activeIndex > 0) {
+            activeIndex--;
+            renderCounters();
+            showQuestion(activeIndex);
+        }
+    }
+
+    async function saveOption(qId, ans) {
+        savedAnswers[qId] = ans;
+        renderCounters();
+        try {
+            await fetch(`/app/quizer/test/${testId}/option`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question_id: qId, option_index: ans })
+            });
+        } catch (error) {
+            console.error("Javobni saqlashda xatolik:", error);
+        }
+    }
+
+    // Boshqa oynaga o'tganida majburiy va avtomatik tugatish
+    async function autoFinishTest() {
+        testActive = false;
+        // Event listenerni o'chiramizki, cheksiz siklga tushib qolmasin
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+        if (wakeLock !== null) {
+            wakeLock.release(); // Ekranni qo'yib yuboramiz
+        }
+
+        await fetch(`/app/quizer/test/${testId}/finish`, { method: 'POST' });
+        window.location.href = "/app/quizer";
+    }
+
+    // Foydalanuvchi o'z xohishi bilan tugatishi
+    async function finishTest() {
+        if (testActive && confirm("Haqiqatdan ham testni yakunlamoqchimisiz?")) {
+            testActive = false;
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+            if (wakeLock !== null) {
+                wakeLock.release();
+            }
+
+            const res = await fetch(`/app/quizer/test/${testId}/finish`, { method: 'POST' });
+            alert("Test yakunlandi. Natijalar paneli orqali ko'rishingiz mumkin.");
+            window.location.href = "/app/quizer";
+        }
+    }
+</script>
+{% endblock %}

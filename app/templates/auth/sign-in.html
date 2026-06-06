@@ -1,0 +1,149 @@
+{% extends "base.html" %} {% block style %}
+<style>
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: transparent;
+    color: #c9e6ff;
+    outline: none;
+  }
+
+  input:focus {
+    border-radius: 20px;
+  }
+
+  .glass-card {
+    height: fit-content;
+  }
+
+  #username:not(:placeholder-shown) {
+    border: green solid 1px;
+  }
+
+  input.red {
+    border: red solid 1px;
+  }
+
+  input.green {
+    border: green solid 1px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    gap: 15px;
+  }
+
+  .submit-action {
+    width: 100%;
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #c9e6ff;
+    cursor: pointer;
+  }
+
+  .submit-action:hover {
+    border-radius: 20px;
+  }
+
+  .error-message {
+    margin-top: 30px;
+    padding: 10px;
+    border: 1px solid #ff4c4c;
+    border-radius: 10px;
+    background: rgba(255, 76, 76, 0.1);
+    color: #ff8c8c;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="glass-card">
+  <h2 class="text-2xl font-bold mb-4">Kirish</h2>
+  {% if error %}
+  <div class="error-message">{{ error }}</div>
+  {% endif %}
+  <form action="/auth/sign-in" method="post">
+    <div>
+      <label for="username">Foydalanuvchi nomi</label>
+      <input type="text" name="username" id="username" required data-i18n-placeholder="username" placeholder="Username"
+        value="{{ username if username else '' }}" />
+    </div>
+    <div>
+      <label for="password">Parol</label>
+      <input type="password" name="password" id="password" required data-i18n-placeholder="password"
+        placeholder="Password" />
+    </div>
+    <div>
+      <button type="submit" class="submit-action" id="submit">
+        Kirish
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block js %}
+<script>
+  const input = document.getElementById("password");
+  const usernameInput = document.getElementById("username");
+  const button = document.getElementById("submit");
+  input.addEventListener("input", () => {
+    if (input.value.length < 8 && input.value.length > 0) {
+      input.classList.add("red");
+      input.classList.remove("green");
+    } else if (input.value.length >= 8) {
+      input.classList.add("green");
+      input.classList.remove("red");
+    } else {
+      input.classList.remove("red");
+      input.classList.remove("green");
+    }
+  });
+  button.addEventListener("mouseenter", () => {
+    if (input.value.length < 8 || usernameInput.value.length < 1) {
+      button.style.backgroundColor = "red";
+      button.style.borderColor = "red";
+      button.innerText = "Iltimos, ma'lumotlarni to'liq kiriting"; // Yaxshiroq ko'rinishi uchun matnni o'zgartiramiz
+      button.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: "translateX(-10px)" },
+          { transform: "translateX(10px)" },
+          { transform: "translateX(0)" },
+        ],
+        {
+          duration: 300,
+          iterations: 1,
+        },
+      );
+    } else {
+      button.style.backgroundColor = "green"; // Yaxshiroq ko'rinishi uchun yashil
+      button.style.borderColor = "green";
+      button.innerText = "Kirish uchun bosing"; // Yaxshiroq ko'rinishi uchun matnni o'zgartiramiz
+      button.animate(
+        [
+          { transform: "translateY(0)" },
+          { transform: "translateY(-10px)" },
+          { transform: "translateY(10px)" },
+          { transform: "translateY(0)" },
+        ],
+        {
+          duration: 300,
+          iterations: 1,
+        },
+      );
+    }
+  });
+
+  // 2. Sichqoncha chiqib ketganda rangni qaytaramiz
+  button.addEventListener("mouseleave", () => {
+    button.style.backgroundColor = "transparent"; // Boshlang'ich holat
+    button.style.borderColor = "#C9E6FF"; // Boshlang'ich holat
+    button.innerText = "Kirish"; // Boshlang'ich matn
+  });
+</script>
+{% endblock %}

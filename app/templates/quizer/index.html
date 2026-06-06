@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block style %}
+<style>
+    .quiz-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .tab-view {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .tab-items {
+        padding: 10px 20px;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: none;
+        backdrop-filter: blur(10px);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .tab-items:hover {
+        box-shadow: rgb(208, 12, 252) 0 0 5px 5px;
+    }
+
+    .tab-items.active {
+        background: rgb(208, 12, 252);
+        box-shadow: 0 0 18px rgba(208, 12, 252, 0.5);
+    }
+
+    .tab-content {
+        position: relative;
+        width: 100%;
+        max-width: 960px;
+        min-height: 320px;
+        height: auto; /* Ichidagi kontent ko'paysa ramka pastga chiroyli o'sadi */
+        overflow: hidden;
+        border-radius: 25px;
+        padding: 0;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    }
+
+    .tab-wrapper {
+        display: flex;
+        width: 400%;
+        transition: transform 0.7s ease-in-out;
+        will-change: transform;
+    }
+
+    .tab-panel {
+        flex: 0 0 25%;
+        width: 25%;
+        min-height: 320px;
+        height: auto;
+        padding: 24px 20px;
+        box-sizing: border-box;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .tab-panel.active {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .tab-content .glass-card {
+        width: 100% !important;
+        flex-shrink: 0;
+    }
+
+    .tab-panel h1,
+    .tab-panel p {
+        color: #fff;
+        text-align: center;
+    }
+
+    .tab-panel input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        margin: 12px 0;
+    }
+
+    .tab-cta {
+        width: 100%;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 14px;
+        background: rgba(208, 12, 252, 0.9);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+        margin-top: 10px;
+    }
+
+    .tab-cta:hover {
+        background: rgba(208, 12, 252, 1);
+        transform: translateY(-1px);
+    }
+
+    .tab-panel .message {
+        margin-top: 12px;
+        color: #caa5ca;
+        text-align: center;
+    }
+
+    .official-tests {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 20px;
+    }
+
+    .official-tests .glass-card {
+        min-width: 200px;
+        max-width: 260px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px;
+        border-radius: 15px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="quiz-container">
+    <h1>Xo'sh {{ user }} bugun qanday test ishlamoqchisiz</h1>
+    <div class="tab-view">
+        <button class="tab-items active" data-tab="official">Rasmiy Testlar</button>
+        <button class="tab-items" data-tab="sign">Ro'yhatdan O'tgan testlar</button>
+        <button class="tab-items" data-tab="maxfiy">Maxfiy Testlarda Ro'yhatdan O'tish</button>
+        <button class="tab-items" data-tab="create">Yangi Test Yaratish</button>
+    </div>
+    <div class="tab-content">
+        <div class="tab-wrapper">
+            <div class="tab-panel active" id="official">
+                <h1>Rasmiy Testlar</h1>
+                <div id="official-list" class="official-tests">
+                    <p>Yuklanmoqda...</p>
+                </div>
+            </div>
+            <div class="tab-panel" id="sign">
+                <h1>Ro'yhatdan O'tgan testlar</h1>
+                <div id="sign-list" class="official-tests">
+                    <p>Yuklanmoqda...</p>
+                </div>
+            </div>
+            <div class="tab-panel" id="maxfiy">
+                <h1>Maxfiy Testlarda Ro'yhatdan O'tish</h1>
+                <div class="inner-card" style="padding: 10px 0;">
+                    <p>Ro'yhatdan o'tish uchun test ID kiriting:</p>
+                    <input type="number" id="secret-test-id" placeholder="Test ID" />
+                    <button class="tab-cta" id="secret-register-btn">Ro'yhatdan o'tish</button>
+                    <p id="maxfiy-message" class="message"></p>
+                </div>
+            </div>
+            <div class="tab-panel" id="create">
+                <h1>Yangi Test Yaratish</h1>
+                <div class="inner-card" style="padding: 10px 0;">
+                    <p>Sizda <strong id="user-scoin">...</strong> sCoin bor.</p>
+                    <button class="tab-cta" id="create-manual-btn">Yangi test yaratish - 4000 sCoin</button>
+                    <p class="costs">
+                        1. Yangi test yaratish - 4000 sCoin<br>
+                        2. AI anchomlari bilan test yaratish - 2000 sCoin <br>
+                        3. Maxfiy test yaratish uchun - 1000 sCoin <br>
+                        4. Testni tahrirlash - 500 sCoin <br>
+                        5. Testni o'chirish - 500 sCoin <br>
+                        6. Har bir savol qo'shish - 100 sCoin <br>
+                        Jami agar siz hamma argumentlarni ishlatsangiz, taxminan 7000 sCoin kerak bo'ladi va har bir savolizi uchun 100 sCoin qo'shimcha olinadi
+                    </p>
+                    <p id="create-message" class="message"></p>
+                    <button class="tab-cta" onclick="window.location.href = '/app/quizer/edit'">Testlarimni Tarhirlash</button>
+                </div>
+                <div id="my-tests-list" class="official-tests">
+                    <p>Yuklanmoqda...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    const tabButtons = document.querySelectorAll('.tab-items');
+    const tabWrapper = document.querySelector('.tab-wrapper');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    let currentTabIndex = 0;
+
+    function updateTabs(index) {
+        currentTabIndex = index;
+        tabButtons.forEach((btn, btnIndex) => {
+            btn.classList.toggle('active', btnIndex === index);
+        });
+        tabPanels.forEach((panel, panelIndex) => {
+            panel.classList.toggle('active', panelIndex === index);
+        });
+        if (tabWrapper) {
+            tabWrapper.style.transform = `translateX(-${index * 25}%)`;
+        }
+    }
+
+    async function fetchJson(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                ...options,
+                credentials: options.credentials || 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
+                }
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || data.message || response.statusText || 'Xato yuz berdi');
+            }
+            return data;
+        } catch (error) {
+            console.error('Fetch error:', url, error);
+            return { error: error.message || 'Tarmoq xatosi' };
+        }
+    }
+
+    function renderTestCards(containerId, tests, emptyMessage) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (!tests || !tests.length) {
+            container.innerHTML = `<p>${emptyMessage}</p>`;
+            return;
+        }
+        container.innerHTML = tests.map(test => `
+            <a class="glass-card" href="/app/quizer/test/${test.id}/play">
+                <h3>${test.title || "Noma’lum test"}</h3>
+                <p>${test.description || "Ta'rif mavjud emas."}</p>
+                <p><strong>ID:</strong> ${test.id}</p>
+            </a>
+        `).join('');
+    }
+
+    // 🔥 SIZ AYTGAN IERARXIYADAGI ENG TO'G'RI URL MANZIL 🔥
+    const apiBase = '/app/quizer/api';
+
+    async function loadPublicTests() {
+        const data = await fetchJson(`${apiBase}/public-tests`);
+        if (data.error) {
+            document.getElementById('official-list').innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+        renderTestCards('official-list', data.tests, 'Hozircha rasmiy testlar mavjud emas.');
+    }
+
+    async function loadAllowedTests() {
+        const data = await fetchJson(`${apiBase}/user-allowed-tests`);
+        if (data.error) {
+            document.getElementById('sign-list').innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+        renderTestCards('sign-list', data.allowed_tests, 'Sizda ro‘yhatdan o‘tgan testlar mavjud emas.');
+    }
+
+    async function loadMyTests() {
+        const data = await fetchJson(`${apiBase}/my-tests`);
+        if (data.error) {
+            document.getElementById('my-tests-list').innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+        renderTestCards('my-tests-list', data.allowed_tests, 'Hozircha sizning yaratilgan testlaringiz mavjud emas.');
+    }
+
+    async function loadUserScoin() {
+        const data = await fetchJson(`${apiBase}/scoin`);
+        const display = document.getElementById('user-scoin');
+        if (!display) return;
+        if (data.error) {
+            display.textContent = 'Noma’lum';
+            return;
+        }
+        display.textContent = data.scoin ?? 0;
+    }
+
+    async function registerSecretTest() {
+        const testId = document.getElementById('secret-test-id').value.trim();
+        const message = document.getElementById('maxfiy-message');
+        if (!testId) {
+            message.textContent = 'Iltimos, test ID kiriting.';
+            return;
+        }
+        message.textContent = 'Ro‘yhatdan o‘tilmoqda...';
+        const result = await fetchJson(`${apiBase}/test/${testId}/add`, { method: 'GET' });
+        if (result.error) {
+            message.textContent = result.error;
+            return;
+        }
+        message.textContent = result.message || 'Siz testga muvaffaqiyatli ro‘yxatdan o‘tadingiz.';
+        loadAllowedTests();
+    }
+
+    async function createTest(cost, type) {
+        window.location.href = `/app/quizer/create`;
+    }
+
+    function initTabs() {
+        tabButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                updateTabs(index);
+            });
+        });
+        updateTabs(0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initTabs();
+        loadPublicTests();
+        loadAllowedTests();
+        loadMyTests();
+        loadUserScoin();
+        document.getElementById('secret-register-btn')?.addEventListener('click', registerSecretTest);
+        document.getElementById('create-manual-btn')?.addEventListener('click', () => createTest(3000, 'manual'));
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,577 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 90%;
+    /* Kenglikni biroz kamaytirdik */
+    max-width: 600px;
+    margin: 20px auto;
+    /* Yuqoridan joy va markazlash */
+    padding-bottom: 100px;
+    /* Menyubar ostida qolib ketmasligi uchun joy */
+  }
+
+  .settings-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    padding: 25px;
+  }
+
+  .settings-section h2 {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    color: white;
+  }
+
+  .settings-section h3 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: white;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: white;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"],
+  .form-group select {
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1em;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #5A00C6;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(90, 0, 198, 0.3);
+  }
+
+  .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+  }
+
+  .toggle-switch input[type="checkbox"] {
+    width: 50px;
+    height: 25px;
+    cursor: pointer;
+    accent-color: #5A00C6;
+  }
+
+  .toggle-switch label {
+    margin: 0;
+    cursor: pointer;
+    color: white;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: #5A00C6;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #7b2cbf;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(90, 0, 198, 0.5);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .btn-danger {
+    background: rgba(255, 76, 76, 0.3);
+    color: #ff8c8c;
+    border: 1px solid #ff8c8c;
+  }
+
+  .btn-danger:hover {
+    background: rgba(255, 76, 76, 0.5);
+  }
+
+  .success-message,
+  .error-message {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
+
+  .success-message {
+    background: rgba(76, 255, 76, 0.1);
+    color: #4cff4c;
+    border: 1px solid #4cff4c;
+  }
+
+  .error-message {
+    background: rgba(255, 76, 76, 0.1);
+    color: #ff8c8c;
+    border: 1px solid #ff8c8c;
+  }
+
+  .settings-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .tab-btn.active {
+    border-color: #5A00C6;
+    background: #5A00C6;
+  }
+
+  .tab-btn:hover {
+    border-color: #5A00C6;
+  }
+
+  .tab-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stats-card {
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(14px);
+  }
+
+  .stats-card h3 {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 10px;
+  }
+
+  .stats-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .stats-card p {
+    color: #e9e9ff;
+  }
+
+  .stats-section {
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .settings-container {
+      max-width: 100%;
+      padding: 10px;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+  <h1 style="margin-bottom: 20px; color: white;">Sozlamalar</h1>
+
+  <!-- Tabs Navigation -->
+  <div class="settings-tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'profile-tab')">Profil</button>
+  </div>
+
+  <!-- Profile Tab -->
+  <div id="profile-tab" class="tab-content active">
+    <div class="settings-section">
+      <h2>Statistika</h2>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <h3>Promo-kod</h3>
+          <p id="promoCode">Yuklanmoqda...</p>
+        </div>
+        <div class="stats-card">
+          <h3>XP</h3>
+          <p id="xpValue" class="value">0</p>
+        </div>
+        <div class="stats-card">
+          <h3>sCoins</h3>
+          <p id="coinsValue" class="value">0</p>
+        </div>
+        <div class="stats-card">
+          <h3>Qo'shilgan sana</h3>
+          <p id="dateJoined">Yuklanmoqda...</p>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-secondary" id="refreshStatsBtn">Statistikani yangilash</button>
+      </div>
+
+      <div id="statsMessage"></div>
+    </div>
+
+    <div class="settings-section">
+      <h2>Profil</h2>
+
+      <div id="profile-message"></div>
+      <div class="form-group">
+        <label>Foydalanuvchi nomi</label>
+        <input type="text" id="username" data-i18n-placeholder="username" placeholder="Foydalanuvchi nomi" />
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()">Saqlash</button>
+        <button class="btn btn-secondary" onclick="showChangePasswordModal()">Parolni
+          o'zgartir</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="passwordModal"
+  style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div class="settings-section" style="max-width: 400px;">
+    <h2>Parolni o'zgartir</h2>
+
+    <div class="form-group">
+      <label>Eski parol</label>
+      <input type="password" id="oldPassword" data-i18n-placeholder="old_password" placeholder="Eski parol" />
+    </div>
+
+    <div class="form-group">
+      <label>Yangi parol</label>
+      <input type="password" id="newPassword" data-i18n-placeholder="new_password" placeholder="Yangi parol" />
+    </div>
+
+    <div class="form-group">
+      <label>Parolni tasdiqlang</label>
+      <input type="password" id="confirmPassword" data-i18n-placeholder="confirm_password"
+        placeholder="Parolni tasdiqlang" />
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-primary" onclick="changePassword()">Saqlash</button>
+      <button class="btn btn-secondary" onclick="closePasswordModal()">Bekor qilish</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  // Tab switching
+  function switchTab(event, tabName) {
+    event.preventDefault();
+
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Theme setting
+  function setTheme(theme) {
+    console.log('Setting theme to:', theme);
+    document.getElementById('dark-btn').classList.remove('active');
+    document.getElementById('light-btn').classList.remove('active');
+    if (theme === 'dark') {
+      document.getElementById('dark-btn').classList.add('active');
+    } else {
+      document.getElementById('light-btn').classList.add('active');
+    }
+  }
+
+  // Language setting
+  function setLanguage(lang) {
+    console.log('Setting language to:', lang);
+    if (i18n) {
+      i18n.setLanguage(lang);
+    }
+
+    // Highlight active language button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    const targetBtn = document.getElementById(lang + '-btn');
+    if (targetBtn) {
+      targetBtn.classList.add('active');
+    }
+  }
+
+  async function loadUserStats(showMessage = false) {
+    const messageContainer = document.getElementById('statsMessage');
+    try {
+      const response = await fetch('/api/user/stats', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Statistika yuklanmadi');
+      }
+
+      const data = await response.json();
+      document.getElementById('promoCode').innerText = data.promo || 'N/A';
+      document.getElementById('xpValue').innerText = data.xp ?? 0;
+      document.getElementById('coinsValue').innerText = data.coins ?? 0;
+      document.getElementById('dateJoined').innerText = data.date_joined || "Noma'lum";
+
+      if (showMessage) {
+        showStatsMessage('Statistika muvaffaqiyatli yangilandi', false);
+      }
+
+      return true;
+    } catch (error) {
+      showStatsMessage(error.message || 'Statistika olishda xatolik', true);
+      document.getElementById('promoCode').innerText = 'N/A';
+      document.getElementById('xpValue').innerText = '0';
+      document.getElementById('coinsValue').innerText = '0';
+      document.getElementById('dateJoined').innerText = "Noma'lum";
+      return false;
+    }
+  }
+
+  function showStatsMessage(message, isError) {
+    const container = document.getElementById('statsMessage');
+    container.innerHTML = '';
+    const messageEl = document.createElement('div');
+    messageEl.className = isError ? 'error-message' : 'success-message';
+    messageEl.textContent = message;
+    container.appendChild(messageEl);
+  }
+
+  async function handlePromoButton() {
+    await loadUserStats(true);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUserStats();
+    const refreshBtn = document.getElementById('refreshStatsBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', handlePromoButton);
+    }
+  });
+
+  // Save profile
+  async function saveProfile() {
+    const username = document.getElementById('username').value;
+    const messageDiv = document.getElementById('profile-message');
+
+    if (!username) {
+      messageDiv.innerHTML = '<div class="error-message">Iltimos, barcha maydonlarni to\'ldiring</div>';
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('username', username);
+
+      const response = await fetch('/account/update-profile', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        messageDiv.innerHTML = '<div class="success-message">Muvaffaqiyatli yangilandi</div>';
+        setTimeout(() => {
+          messageDiv.innerHTML = '';
+        }, 3000);
+      } else if (response.status === 400) {
+        console.error("400 Bad Request: Xato so'rov");
+        messageDiv.innerHTML = '<div class="error-message">Bu foydalanuvchi nomi band</div>';
+      } else {
+        const errorData = await response.json();
+        messageDiv.innerHTML = '<div class="error-message">' + errorData.error + '</div>';
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      messageDiv.innerHTML = '<div class="error-message">Xatolik yuz berdi</div>';
+    }
+  }
+  // Password modal
+  function showChangePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'flex';
+  }
+
+  function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  }
+
+  async function changePassword() {
+    const oldPass = document.getElementById('oldPassword').value;
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+
+    if (!oldPass || !newPass || !confirmPass) {
+      alert('Iltimos, barcha maydonlarni to\'ldiring');
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      alert('Parollar mos kelmadi');
+      return;
+    }
+
+    if (newPass.length < 8) {
+      alert('Parol kamida 8 ta belgidan iborat bo\'lishi kerak');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('old_password', oldPass);
+      formData.append('new_password', newPass);
+      formData.append('confirm_password', confirmPass);
+
+      const response = await fetch('/account/change-password', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Parol muvaffaqiyatli o\'zgartirildi');
+        closePasswordModal();
+      } else {
+        alert('Parol o\'zgartirilmadi. Eski parolni tekshirib ko\'ring');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Xatolik yuz berdi');
+    }
+  }
+
+  // Placeholder functions
+  function enableTwoFA() {
+    alert('Ikki faktorli autentifikatsiya oziq');
+  }
+
+  function logoutAllDevices() {
+    if (confirm('Barcha qurilmalardan chiqishni xohlaysizmi?')) {
+      window.location.href = '/auth/logout';
+    }
+  }
+
+  // Initialize on page load
+  window.addEventListener('languageChanged', () => {
+    // Update language button states
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    const currentLang = i18n.getCurrentLanguage();
+    const langBtn = document.getElementById(currentLang + '-btn');
+    if (langBtn) {
+      langBtn.classList.add('active');
+    }
+  });
+</script>
+{% endblock %}

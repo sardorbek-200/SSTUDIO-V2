@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block style %}
+    <style>
+        .card {
+            background-color: #1f29373c;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+        }
+        .icon {
+            font-size: 3rem;
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: #9ca3af;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .btn-secondary:hover {
+            color: #f3f4f6;
+        }
+        * {transition: all 1s !important;}
+    </style>
+{% endblock %}{%block content %}
+
+<div class="card">
+    <div class="icon">🔔</div>
+    <h2>Telegram Bildirishnomalari</h2>
+    <p>
+        Test natijalari, yangi imtihonlar va SCoin o‘zgarishlari haqida real vaqtda xabardor bo‘lish uchun Telegram botimizni faollashtiring.
+    </p>
+    
+    <div class="btn-container">
+        <a href="{{ bot_url }}" class="btn-primary" target="_blank">Davom etish</a>
+        
+        <a href="/app/quizer/?skip=true" class="btn-secondary">Hozircha o‘tkazib yuborish</a>
+    </div>
+</div>
+{% endblock %}

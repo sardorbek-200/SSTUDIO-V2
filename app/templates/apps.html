@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block style %}
+<style>
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+    .appslist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 20px;
+        flex: 1;
+    }
+    .appitem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        width: 150px;
+        gap: 10px;
+    }
+    .appitem .glass-card {
+        width: fit-content;
+    }
+    .appitem img {
+        width: 200px;
+        height: 200px;
+        border-radius: 100px;
+    }
+    .appitem .glass-card:first-child {
+        padding:0px;
+    }
+</style>
+{% endblock %}{% block content %}
+<div class="app-container">
+    <h1>Ilovalar</h1>
+    <div class="appslist">
+        <a href="/app/quizer" class="appitem">
+            <div class="glass-card">
+                <img src="/static/icon/quizerapp.png" alt="Quizer">
+            </div>
+            <div class="glass-card">
+                <h2>Quizer</h2>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

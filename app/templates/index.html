@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block style %}
+
+<style>
+  .window {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="window">
+  <div class="glass-card">
+    <h1><span>Xush kelibsiz</span> {{ username }}</h1>
+  </div>
+  <div class="glass-card">
+    <h5><span>Umumiy Foydalanuvchilar Soni</span></h5>
+    <span style="font-size: 2em">{{ total_users }}</span>
+  </div>
+  <div class="glass-card">
+    <h3><span>Top Reyting</span></h3>
+    <span>🥇{{top_users[0].username}}</span>
+    <hr />
+    <span>🥈{{top_users[1].username}}</span>
+    <hr />
+    <span>🥉{{top_users[2].username}}</span>
+  </div>
+</div>
+{% if status == "UNAUTHORIZED" %}
+<div class="window">
+  <div class="glass-card" style="margin-bottom: auto">
+    <span><span>Siz hali tizimda kirmmagansiz Hozroq kiring va foydalaning</span></span>
+    <a href="/auth" style="display: inline-block; margin-top: 5px" class="auth"><span>Kirish</span></a>
+  </div>
+</div>
+{% endif %}
+<div class="window">
+  <div class="glass-card" style="">
+    <span><b>Sstudio</b> <span>Shunday saytki bu yerda turli yo'nalishga o'ziga kerak
+        bo'lgan ma'lumot va ilovalarni topa olasiz</span></span>
+  </div>
+  <div class="glass-card" style="">
+    <span><span>Bu yerda siz ta'limga doir turli xil content O'yinlar h.k topishingiz
+        mumkin</span></span>
+  </div>
+  <div class="glass-card" style="">
+    <span><span>Hatto Dasturchilar uchun kerakli va yordamchi Dasturlar ham bor</span></span>
+  </div>
+</div>
+
+{% endblock %}

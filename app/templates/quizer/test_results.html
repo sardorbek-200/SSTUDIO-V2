@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    .resultcontainer {
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+    .table-glass {
+        color: #ffffff !important;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .glass-card {
+        width: auto !important;
+    }
+
+    .table-glass th {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #60a5fa !important;
+        border: none;
+    }
+
+    .table-glass td {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+
+    /* O'rinlar uchun medal va badge stillari */
+    .place-badge {
+        font-weight: bold;
+        padding: 5px 12px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .first-place { background: #f59e0b; color: #000; }  /* Oltin */
+    .second-place { background: #94a3b8; color: #000; } /* Kumush */
+    .third-place { background: #b45309; color: #fff; }  /* Bronza */
+    .other-place { background: rgba(255,255,255,0.1); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resultcontainer mt-5">
+
+    <div class="glass-card mb-4">
+        <h2 class="mb-1">🏆 Test Yakuniy Reytingi</h2>
+        <p class="text-muted mb-0">ID: #{{ test_id }} — O'quvchilar egallagan o'rinlari va natijalari</p>
+    </div>
+
+    <div class="glass-card p-0">
+        <div class="table-responsive">
+            <table class="table table-glass mb-0 text-center">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">O'rin</th>
+                        <th style="text-align: left; padding-left: 30px;">O'quvchi</th>
+                        <th style="width: 20%">To'g'ri javoblar</th>
+                        <th style="width: 15%">Foiz</th>
+                        <th style="width: 25%">Topshirilgan vaqt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res, user in results %}
+                    <tr>
+                        <td>
+                            {% if loop.index == 1 %}
+                                <span class="place-badge first-place">🥇 1-O'rin</span>
+                            {% elif loop.index == 2 %}
+                                <span class="place-badge second-place">🥈 2-O'rin</span>
+                            {% elif loop.index == 3 %}
+                                <span class="place-badge third-place">🥉 3-O'rin</span>
+                            {% else %}
+                                <span class="place-badge other-place">{{ loop.index }}-O'rin</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td style="text-align: left; padding-left: 30px;">
+                            <strong>
+                                {{ username }}
+                            </strong>
+                        </td>
+                        
+                        <td>
+                            <span class="text-info font-weight-bold">{{ res.correct_answers }}</span> / {{ res.total_questions }} ta
+                        </td>
+                        
+                        <td>
+                            <strong style="color: {% if res.percentage >= 80 %}#10b981{% elif res.percentage >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">
+                                {{ res.percentage | round(1) }}%
+                            </strong>
+                        </td>
+                        
+                        <td class="text-muted small">
+                            {{ res.created_at.strftime("%H:%M:%S / %d-%m-%Y") }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

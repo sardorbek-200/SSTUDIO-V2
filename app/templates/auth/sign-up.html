@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: transparent;
+        color: #C9E6FF;
+        outline: none;
+    }
+
+    input:focus {
+        border-radius: 20px;
+    }
+
+    .glass-card {
+        height: fit-content;
+    }
+
+    #username:not(:placeholder-shown),
+    #promo_code_no:not(:placeholder-shown) {
+        border: green solid 1px;
+    }
+
+    input.red {
+        border: red solid 1px;
+    }
+
+    input.green {
+        border: green solid 1px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        gap: 15px;
+    }
+
+    .submit-action {
+        width: 100%;
+        background-color: transparent;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #C9E6FF;
+        cursor: pointer;
+    }
+
+    .submit-action:hover {
+        border-radius: 20px;
+    }
+
+    .error-message {
+        margin-top: 30px;
+        padding: 10px;
+        border: 1px solid #ff4c4c;
+        border-radius: 10px;
+        background: rgba(255, 76, 76, 0.1);
+        color: #ff8c8c;
+    }
+
+    .promocodehelper {
+        background-color: rgb(3, 20, 201, 0.3);
+        padding: 10px;
+        border-radius: 10px;
+        border: blue solid 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2 class="text-2xl font-bold mb-4">Ro'yxatdan o'tish</h2>
+    {% if error %}
+    <div class="error-message">{{ error }}</div>
+    {% endif %}
+    <form action="/auth/sign-up" method="post">
+        <div>
+            <label for="username">Foydalanuvchi nomi</label>
+            <input type="text" name="username" id="username" required placeholder="Username"
+                value="{{ username|default('') }}">
+        </div>
+        <div>
+            <label for="password">Parol</label>
+            <input type="password" name="password" id="password" required placeholder="Password">
+        </div>
+        <div>
+            <label for="password_confirm">Parolni tasdiqlang</label>
+            <input type="password" name="password_confirm" id="password_confirm" required
+                placeholder="Confirm Password">
+        </div>
+        <div>
+            <label for="promo_code_no">Promo-kod</label>
+            <input type="text" name="promo_code_no" id="promo_code_no" placeholder="Promo code"
+                value="{{ promo_code_no|default('') }}">
+        </div>
+        <div>
+            <button type="submit" class="submit-action" id="submit">Ro'yxatdan o'tish</button>
+        </div>
+        <div class="promocodehelper">
+            <p>Agar sizda Promocode yo'q bo'lsa No deb kiriting yoki bo'sh qoldiring</p>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("password_confirm");
+    const usernameInput = document.getElementById("username");
+    const promoInput = document.getElementById("promo_code_no");
+    const button = document.getElementById("submit");
+
+    function updateFieldState(input, isValid) {
+        if (input.value.length === 0) {
+            input.classList.remove("red");
+            input.classList.remove("green");
+            return;
+        }
+        input.classList.toggle("green", isValid);
+        input.classList.toggle("red", !isValid);
+    }
+
+    function isFormValid() {
+        return usernameInput.value.trim().length > 0
+            && password.value.length >= 8
+            && password.value === confirmPassword.value
+    }
+
+    password.addEventListener('input', () => {
+        updateFieldState(password, password.value.length >= 8);
+    });
+
+    confirmPassword.addEventListener('input', () => {
+        updateFieldState(confirmPassword, confirmPassword.value === password.value && confirmPassword.value.length > 0);
+    });
+
+
+
+    button.addEventListener('mouseenter', () => {
+        if (!isFormValid()) {
+            button.style.backgroundColor = "red";
+            button.style.borderColor = "red";
+            button.innerText = "Iltimos, barcha maydonlarni to'ldiring";
+            button.animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-10px)' },
+                { transform: 'translateX(10px)' },
+                { transform: 'translateX(0)' }
+            ], {
+                duration: 300,
+                iterations: 1
+            });
+        } else {
+            button.style.backgroundColor = "green";
+            button.style.borderColor = "green";
+            button.innerText = "Ro'yxatdan o'tishga tayyor";
+        }
+    });
+
+    button.addEventListener('mouseleave', () => {
+        button.style.backgroundColor = "transparent";
+        button.style.borderColor = "#C9E6FF";
+        button.innerText = "Ro'yxatdan o'tish";
+    });
+</script>
+{% endblock %}
