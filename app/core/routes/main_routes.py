@@ -23,7 +23,7 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
     if len(top_users)<3:
         top_users = [[],[],[]]
     if not access_token:
-        return templates.TemplateResponse(request=request, name="index.html", context={
+        return templates.TemplateResponse(name="index.html", request=request, context={
             "request": request,
             "status": "UNAUTHORIZED",
             "theme": "dark",
@@ -39,7 +39,7 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
     result = await db.execute(query)
     session = result.scalar_one_or_none()
     if not session:
-        return templates.TemplateResponse(request=request, name="index.html", context={
+        return templates.TemplateResponse(name="index.html", request=request, context={
             "request": request,
             "status": "UNAUTHORIZED",
             "theme": "dark",
@@ -54,7 +54,7 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
     user = user_query.scalar_one_or_none()
     client_ip = request.client.host
     if session.ip_address != client_ip:
-        return templates.TemplateResponse(request=request, name="index.html", context={
+        return templates.TemplateResponse(name="index.html", request=request, context={
             "request": request,
             "status": "UNAUTHORIZED",
             "theme": "dark",
@@ -66,7 +66,7 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
         })
     if not user:
         raise Exception("User not found")
-    response = templates.TemplateResponse(request=request, name="index.html", context={
+    response = templates.TemplateResponse(name="index.html", request=request, context={
         "request": request,
         "status": "AUTHORIZED",
         "theme": "dark",

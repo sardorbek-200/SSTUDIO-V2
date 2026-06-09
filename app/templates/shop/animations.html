@@ -1,0 +1,80 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="glass-card">
+    <h1>Animatsiya bozori</h1>
+    <p>Profilingizga jozibali animatsiyalar va CSS effektlar qo'shing.</p>
+</div>
+<div class="glass-card" style="width:100%; max-width:900px;">
+    <div id="shop-alert"
+        style="display:none; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 16px;">
+    </div>
+    {% if message %}
+    <p style="color: #8aff90;">{{ message }}</p>
+    {% endif %}
+    {% if error %}
+    <p style="color: #ff8a8a;">{{ error }}</p>
+    {% endif %}
+    <p>Joriy scoin: <strong id="shop-balance">{{ scoin }}</strong></p>
+</div>
+<div class="cards-grid">
+    {% for item in animation_items %}
+    <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px;">
+            <div>
+                <h2>{{ item.name }}</h2>
+                <p style="font-size:0.9rem; color:#c9e6ff;">#{{ item.id }}</p>
+            </div>
+            <span style="padding:6px 12px; border-radius:999px; background: rgba(255,255,255,0.08);">{{ item.price }}
+                scoin</span>
+        </div>
+        <div
+            style="width:100%; height:180px; border-radius:20px; overflow:hidden; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); margin-bottom:12px;">
+            <div
+                style="width:120px; height:120px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#1f1f3a; color:#fff; text-align:center; padding:12px; font-weight:700; font-size:1.1rem; {{ item.css_code or '' }}">
+                {{ item.name[0] if item.name else 'A' }}
+            </div>
+        </div>
+        <p>{{ item.description }}</p>
+        <form class="shop-buy-form" method="post" action="/app/shop/buy">
+            <input type="hidden" name="item_type" value="animation" />
+            <input type="hidden" name="item_id" value="{{ item.id }}" />
+            <input type="hidden" name="user_id" value="{{ user_id }}" />
+            <button type="submit" class="buy-btn">Sotib olish</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    const shopAlert = document.getElementById('shop-alert');
+    const balanceElem = document.getElementById('shop-balance');
+    const showMessage = (text, error = false) => {
+        shopAlert.style.display = 'block';
+        shopAlert.style.color = error ? '#ff8a8a' : '#8aff90';
+        shopAlert.textContent = text;
+    };
+
+    document.querySelectorAll('.shop-buy-form').forEach(form => {
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/app/shop/buy', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || 'Xatolik yuz berdi');
+                }
+                balanceElem.textContent = data.new_balance;
+                showMessage(data.message, false);
+            } catch (err) {
+                showMessage(err.message || 'Xatolik yuz berdi', true);
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -8,9 +8,11 @@ from ...database import get_db
 from json import loads
 from sqlalchemy import select
 from .quizer import router as quizer_router
+from .shop import router as shop_router
 router = APIRouter(prefix="/app", tags=["app"])
 templates = Jinja2Templates(directory=templates_path)
 router.include_router(quizer_router)
+router.include_router(shop_router)
 @router.get("/", response_class=HTMLResponse)
 async def apps(request: requests.Request, db: UserToken = Depends(get_db), access_token: Annotated[str, Cookie()] = None):
     if access_token is None:

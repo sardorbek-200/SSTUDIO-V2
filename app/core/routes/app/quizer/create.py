@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path, Request, Cookie, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from ....database import get_db 
-from ....models import UserToken, Tests, Questions, User
+from ....models import UserToken, Tests, Questions, User, log_scoin_transaction
 from typing import Annotated
 from json import loads
 from sqlalchemy import select, delete
@@ -185,20 +185,45 @@ async def upload_word_and_generate_structured_html_ai(
         extracted_text = "\n".join(full_text)
         if not extracted_text.strip():
             raise HTTPException(status_code=400, detail="Word fayli bo'sh yoki ichida matn topilmadi!")
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GOOGLE_API_KEY}"
+        # 🔥 SENING JADVALINGDA 500 TA LIMITI BOR BO'LGAN ENG ISHONCHLI MODEL URL manzili:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={GOOGLE_API_KEY}"
+        
         headers = {"Content-Type": "application/json"}
+        
+        
         payload = {
-            "contents": [{"parts": [{"text": f"{AI_PROMPT}\n\nMana test matni:\n{extracted_text}"}]}],
-            "generationConfig": {"responseMimeType": "application/json"}
+            "contents": [{
+                "parts": [{
+                    "text": f"{AI_PROMPT}\n\nMana test matni, barcha misollarni yechib, to'g'ri javobni 'correct' maydoniga yoz:\n{extracted_text}"
+                }]
+            }],
+            "generationConfig": {
+                "responseMimeType": "application/json"  # Toza JSON olish kafolati
+            }
         }
+        try:
+            async with httpx.AsyncClient() as client:
+                # timeout=None qilib qo'yamiz, so'rov uzilib ketmasligi uchun
+                response = await client.post(url, headers=headers, json=payload, timeout=None)  
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=headers, json=payload, timeout=None)  
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=f"Google API xatoligi: {response.text}")
 
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=f"Google API xatoligi: {response.text}")
-
+            res_json = response.json()
+            ai_response_text = res_json['candidates'][0]['content']['parts'][0]['text'].strip()
+            
+            # Agar model javobni markdown ichida qaytarsa, tozalaymiz
+            if ai_response_text.startswith("```json"):
+                ai_response_text = ai_response_text.replace("```json", "").replace("```", "").strip()
+            elif ai_response_text.startswith("```"):
+                ai_response_text = ai_response_text.replace("```", "").strip()
+                
+            generated_questions = json.loads(ai_response_text)
+            print(f"[LOG] >>> GEMINI 2.0 FLASH MUVAFFAQIYATLI HISOBLADI!")
+            
+        except Exception as ai_err:
+            print(f"[LOG] >>> GEMINI 2.0 FLASH ERROR: {str(ai_err)}")
+            raise HTTPException(status_code=500, detail=f"Google 2.0 AI javob bermadi: {str(ai_err)}")
         res_json = response.json()
         ai_response_text = res_json['candidates'][0]['content']['parts'][0]['text'].strip()
         generated_questions = json.loads(ai_response_text)
@@ -314,6 +339,12 @@ async def confirm_and_pay_test(
     try:
         # 4. Mablag'ni balansdan yechish
         user.scoin -= total_cost  # Testni maxfiy deb belgilaymiz
+        await log_scoin_transaction(
+            user_id=user.id,
+            amount=-total_cost,
+            description=f"Test yaratish: {test.title} ({questions_count} savol)",
+            db=db,
+        )
         # Testni to'liq tasdiqlangan holatga keltiramiz
         # Agar modelingizda status bo'lsa: test.status = "active" yoki test.is_active = True
         test.status = "active"  # Misol uchun, testni faol holatga o'tkazamiz

@@ -27,14 +27,110 @@ class User(Base):
 
     # Barcha aloqalar (Relationships) - To'g'ri sinxronizatsiya qilindi
     scoin_history = relationship("ScoinHistory", back_populates="user", cascade="all, delete-orphan")
+    shop_history = relationship("ShopHistory", back_populates="user", cascade="all, delete-orphan")
     telegram_accounts = relationship("TelegramAccount", back_populates="user", cascade="all, delete-orphan")
-    test_results = relationship("TestResult", back_populates="user", cascade="all, delete-orphan")
+    test_results = relationship("TestResult", back_populates="user", cascade="all, delete-orphan", lazy="selectin")
     tests = relationship("Tests", back_populates="creator", cascade="all, delete-orphan")
     allowed_tests = relationship("UserAllowedTest", back_populates="user", cascade="all, delete-orphan")
+    status = relationship("Status", back_populates="user", cascade="all, delete-orphan", uselist=False)
 
 
 # ==========================================
-# 2. USER TOKEN MODEL
+# 2. USER STATUS MODEL
+# ==========================================
+class Status(Base):
+    __tablename__ = "user_statuses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    rank = Column(String(100), nullable=False)
+    picture = Column(String(255), nullable=True)
+    animation = Column(String(255), nullable=True)
+    color = Column(String(50), nullable=True)
+    name_color = Column(String(20), nullable=True)
+    rank_color = Column(String(20), nullable=True)
+
+    user = relationship("User", back_populates="status")
+
+
+# ==========================================
+# 3. SHOP RANK MODEL
+# ==========================================
+class ShopRank(Base):
+    __tablename__ = "shop_ranks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Integer, nullable=False, default=0)
+    picture = Column(String(255), nullable=True)
+    name_color = Column(String(20), nullable=True)
+    rank_color = Column(String(20), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+
+# ==========================================
+# 4. SHOP ANIMATION MODEL
+# ==========================================
+class ShopAnimation(Base):
+    __tablename__ = "shop_animations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Integer, nullable=False, default=0)
+    css_code = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+
+# ==========================================
+# 5. SHOP COLOR MODEL
+# ==========================================
+class ShopColor(Base):
+    __tablename__ = "shop_colors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Integer, nullable=False, default=0)
+    picture = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+
+# ==========================================
+# 6. SHOP BACKGROUND MODEL
+# ==========================================
+class ShopBackground(Base):
+    __tablename__ = "shop_backgrounds"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Integer, nullable=False, default=0)
+    picture = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+
+# ==========================================
+# 7. SHOP HISTORY MODEL
+# ==========================================
+class ShopHistory(Base):
+    __tablename__ = "shop_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    item_type = Column(String(50), nullable=False)
+    item_id = Column(Integer, nullable=False)
+    item_name = Column(String(255), nullable=False)
+    price = Column(Integer, nullable=False)
+    details = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="shop_history")
+
+
+# ==========================================
+# 8. USER TOKEN MODEL
 # ==========================================
 class UserToken(Base):
     __tablename__ = "user_tokens"
@@ -129,10 +225,7 @@ class TestResult(Base):
     total_questions = Column(Integer, nullable=False)  
     percentage = Column(Float, nullable=False)         
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
-
-    user = relationship("User", back_populates="test_results")
-
-
+    user = relationship("User", back_populates="test_results", lazy="selectin")
 # ==========================================
 # 6. AI LEARNING ANALYSIS MODEL (Mustaqil variant)
 # ==========================================

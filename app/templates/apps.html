@@ -7,14 +7,16 @@
         align-items: center;
         padding: 20px;
     }
+
     .appslist {
         display: flex;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 100px;
         justify-content: center;
         margin-top: 20px;
         flex: 1;
     }
+
     .appitem {
         display: flex;
         flex-direction: column;
@@ -24,16 +26,19 @@
         width: 150px;
         gap: 10px;
     }
+
     .appitem .glass-card {
         width: fit-content;
     }
+
     .appitem img {
         width: 200px;
         height: 200px;
-        border-radius: 100px;
+        border-radius: 50px;
     }
+
     .appitem .glass-card:first-child {
-        padding:0px;
+        padding: 0px;
     }
 </style>
 {% endblock %}{% block content %}
@@ -46,6 +51,14 @@
             </div>
             <div class="glass-card">
                 <h2>Quizer</h2>
+            </div>
+        </a>
+        <a href="/app/shop" class="appitem">
+            <div class="glass-card">
+                <img src="/static/icon/shopapp.png" alt="Shop">
+            </div>
+            <div class="glass-card">
+                <h2>Shop</h2>
             </div>
         </a>
     </div>

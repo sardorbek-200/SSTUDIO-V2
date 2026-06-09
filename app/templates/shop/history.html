@@ -1,0 +1,27 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="glass-card">
+    <h1>Shop tarixi</h1>
+    <p>Bu yerda sotib olingan buyumlar tarixi saqlanadi.</p>
+</div>
+{% if history_items %}
+<div class="cards-grid" style="width:100%; max-width:900px;">
+    {% for item in history_items %}
+    <div class="glass-card">
+        <h2>{{ item.item_name }}</h2>
+        <p><strong>Tur:</strong> {{ item.item_type }}</p>
+        <p><strong>Narx:</strong> {{ item.price }} scoin</p>
+        {% if item.details %}
+        <p>{{ item.details }}</p>
+        {% endif %}
+        <p style="opacity: 0.8;">{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card">
+    <p>Siz hali hech narsa sotib olmadingiz.</p>
+</div>
+{% endif %}
+{% endblock %}

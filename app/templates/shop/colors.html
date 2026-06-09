@@ -1,0 +1,74 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="glass-card">
+    <h1>Rang bozori</h1>
+    <p>Profil rangini buyurtma qiling va sahifangizga yangi uslub bering.</p>
+</div>
+<div class="glass-card" style="width:100%; max-width:900px;">
+    <div id="shop-alert" style="display:none; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 16px;"></div>
+    {% if message %}
+    <p style="color: #8aff90;">{{ message }}</p>
+    {% endif %}
+    {% if error %}
+    <p style="color: #ff8a8a;">{{ error }}</p>
+    {% endif %}
+    <p>Joriy scoin: <strong id="shop-balance">{{ scoin }}</strong></p>
+</div>
+<div class="cards-grid">
+    {% for item in color_items %}
+    <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px;">
+            <div>
+                <h2>{{ item.name }}</h2>
+                <p style="font-size:0.9rem; color:#c9e6ff;">#{{ item.id }}</p>
+            </div>
+            <div style="width:40px; height:40px; border-radius:50%; background: {{ item.name if item.name.startswith('#') else '#ffffff' }}; border:1px solid rgba(255,255,255,0.2);"></div>
+        </div>
+        <div style="border-radius:20px; overflow:hidden; margin-bottom:12px; border:1px solid rgba(255,255,255,0.15);">
+            <img src="{{ item.picture or '/static/images/default_bg.png' }}" alt="{{ item.name }}" style="width:100%; height:180px; object-fit:cover; display:block;" />
+        </div>
+        <p>{{ item.description }}</p>
+        <p><strong>Narx:</strong> {{ item.price }} scoin</p>
+        <form class="shop-buy-form" method="post" action="/app/shop/buy">
+            <input type="hidden" name="item_type" value="color" />
+            <input type="hidden" name="item_id" value="{{ item.id }}" />
+            <input type="hidden" name="user_id" value="{{ user_id }}" />
+            <button type="submit" class="buy-btn">Sotib olish</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+{% block js %}
+<script>
+const shopAlert = document.getElementById('shop-alert');
+const balanceElem = document.getElementById('shop-balance');
+const showMessage = (text, error = false) => {
+    shopAlert.style.display = 'block';
+    shopAlert.style.color = error ? '#ff8a8a' : '#8aff90';
+    shopAlert.textContent = text;
+};
+
+document.querySelectorAll('.shop-buy-form').forEach(form => {
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        try {
+            const response = await fetch('/app/shop/buy', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.detail || data.message || 'Xatolik yuz berdi');
+            }
+            balanceElem.textContent = data.new_balance;
+            showMessage(data.message, false);
+        } catch (err) {
+            showMessage(err.message || 'Xatolik yuz berdi', true);
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="glass-card">
+    <h1>Shop bozori</h1>
+    <p>O'zingizga yoqadigan rank va backgroundlarni bu yerdan tanlang.</p>
+</div>
+<div class="cards-grid">
+    <div class="glass-card">
+        <h2>Rank bozori</h2>
+        <p>Foydalanuvchi darajasini oshiring va maxsus effektlar oching.</p>
+        <a href="/app/shop/rank" class="buy-btn">Rank bozoriga o'tish</a>
+    </div>
+    <div class="glass-card">
+        <h2>Background bozori</h2>
+        <p>Sahifa fonini sotib oling va vizual ko'rinishni yaxshilang.</p>
+        <a href="/app/shop/background" class="buy-btn">Background bozoriga o'tish</a>
+    </div>
+    <div class="glass-card">
+        <h2>Rang bozori</h2>
+        <p>Profil uslubingizni ranglar bilan boyiting.</p>
+        <a href="/app/shop/colors" class="buy-btn">Rang bozoriga o'tish</a>
+    </div>
+    <div class="glass-card">
+        <h2>Animatsiya bozori</h2>
+        <p>Profilingizga maxsus animatsiyalar va effektlar qo'shing.</p>
+        <a href="/app/shop/animations" class="buy-btn">Animatsiya bozoriga o'tish</a>
+    </div>
+    <div class="glass-card">
+        <h2>Profil rasm bozori</h2>
+        <p>Profilingizni jonlantiruvchi avatarlar va stil variantlarini tanlang.</p>
+        <a href="/app/shop/avatars" class="buy-btn">Profil rasm bozoriga o'tish</a>
+    </div>
+    <div class="glass-card">
+        <h2>Shop tarixi</h2>
+        <p>Oldingi xaridlaringizni bu yerdan kuzatishingiz mumkin.</p>
+        <a href="/app/shop/history" class="buy-btn">Tarixni ko'rish</a>
+    </div>
+</div>
+<div class="glass-card">
+    <h2>Joriy balans</h2>
+    <p>Scoin: {{ scoin if scoin is not none else 0 }}</p>
+</div>
+{% endblock %}
