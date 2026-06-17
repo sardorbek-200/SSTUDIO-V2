@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request, Cookie
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from json import loads, dumps
 from typing import Annotated
 from ...database import get_db
@@ -317,6 +317,9 @@ async def delete_account(
                 status_code=400,
                 content={"error": "Parol noto'g'ri"}
             )
+        
+        # Foydalanuvchining barcha tokenlarini olib tashlaymiz
+        await db.execute(delete(UserToken).where(UserToken.user_id == user.id))
         
         # Akkauntni o'chirish
         await db.delete(user)

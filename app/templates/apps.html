@@ -61,6 +61,16 @@
                 <h2>Shop</h2>
             </div>
         </a>
+        {% if admin %}
+        <a href="/admin" class="appitem">
+            <div class="glass-card">
+                <img src="/static/icon/adminapp.svg" alt="">
+            </div>
+            <div class="glass-card">
+                <h2>Admin</h2>
+            </div>
+        </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

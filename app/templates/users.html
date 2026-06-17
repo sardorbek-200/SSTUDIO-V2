@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+  .users-table {
+    width: 100%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    margin: 0 auto;
+    color: #fff;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 14px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    text-align: left;
+  }
+
+  .users-table th {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .users-table tr:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    height: 100%;
+    margin-top: 24px;
+  }
+
+  .pagination a {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .pagination a.active {
+    background: #5A00C6;
+    color: #fff;
+  }
+
+  .user-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .user-summary {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .user-summary div {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 18px 22px;
+    border-radius: 20px;
+  }
+
+  .user-link {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .user-link:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-summary">
+  <div>
+    <h2>Foydalanuvchilar</h2>
+    <p>{{ total_users }} ta foydalanuvchi ro‘yhatda</p>
+  </div>
+  <div>
+    <h2>Sahifa</h2>
+    <p>{{ page }} / {{ total_pages }}</p>
+  </div>
+  <div>
+    <h2>Holat</h2>
+    <p>{{ status }}</p>
+  </div>
+</div>
+
+<div class="glass-card" style="width:100%; max-width:1000px; margin: 0 auto;">
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Foydalanuvchi</th>
+        <th>XP</th>
+        <th>Profil</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ offset + loop.index }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.xp or 0 }}</td>
+        <td><a class="user-link" href="/users/{{ user.id }}">Ko‘rish</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  {% if page > 1 %}
+  <a href="/users?page={{ page - 1 }}">Oldingi</a>
+  {% endif %}
+
+  {% for p in range(1, total_pages + 1) %}
+  <a href="/users?page={{ p }}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
+  {% endfor %}
+
+  {% if page < total_pages %}
+  <a href="/users?page={{ page + 1 }}">Keyingi</a>
+  {% endif %}
+</div>
+{% endblock %}

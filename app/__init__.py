@@ -5,6 +5,8 @@ from app.core.routes.main_routes import router as main_router
 from app.core.routes.auth_routes import auth
 from app.core.routes.settings import settings
 from app.core.routes.app import router as app_router
+from app.core.routes.users import router as users_router
+from app.core.routes.app.admin import router as admin_router
 from app.core.database import get_db
 from app.core.models import UserToken
 from datetime import datetime, timedelta
@@ -38,8 +40,9 @@ app = FastAPI(
 
 
 
-app.mount("/static", StaticFiles(directory="./static"), name="static")
+app.include_router(admin_router)
 app.include_router(main_router)
 app.include_router(auth)
 app.include_router(settings)
 app.include_router(app_router)
+app.include_router(users_router)

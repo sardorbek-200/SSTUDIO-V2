@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+  .admin-users-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .admin-header a {
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: rgba(90, 0, 198, 0.9);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 16px 18px;
+    text-align: left;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .users-table th {
+    background: rgba(255, 255, 255, 0.12);
+    font-weight: 700;
+  }
+
+  .users-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .user-actions a {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(90, 0, 198, 0.9);
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .user-actions a.danger {
+    background: rgba(255, 76, 76, 0.9);
+  }
+
+  @media (max-width: 900px) {
+    .users-table th,
+    .users-table td {
+      padding: 12px 10px;
+    }
+
+    .admin-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-users-container">
+  <div class="admin-header">
+    <div>
+      <h1>Foydalanuvchilar boshqaruvi</h1>
+      <p>Admin: {{ username }}</p>
+    </div>
+    <div>
+      <a href="/admin">Admin panelga qaytish</a>
+      <a href="/app">Ilovalarga qaytish</a>
+    </div>
+  </div>
+
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Foydalanuvchi</th>
+        <th>Promo</th>
+        <th>Til</th>
+        <th>XP</th>
+        <th>sCoin</th>
+        <th>Ro'yxatdan o'tgan sana</th>
+        <th>Harakatlar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.promo }}</td>
+        <td>{{ user.language }}</td>
+        <td>{{ user.xp }}</td>
+        <td>{{ user.scoin }}</td>
+        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+        <td class="user-actions">
+          <a href="/users/{{ user.id }}">Profil</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

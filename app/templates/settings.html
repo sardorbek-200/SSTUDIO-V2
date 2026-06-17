@@ -318,6 +318,15 @@
         <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()">Saqlash</button>
         <button class="btn btn-secondary" onclick="showChangePasswordModal()">Parolni
           o'zgartir</button>
+        <button class="btn btn-danger" onclick="showDeleteAccountModal()">Hisobni o'chirish</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2>Hisobni o'chirish</h2>
+      <p>Hisobingizni o'chirish butun saqlangan ma'lumotlaringizni o'chiradi. Iltimos, parolingizni tasdiqlang.</p>
+      <div class="button-group">
+        <button class="btn btn-danger" onclick="showDeleteAccountModal()">Hisobni o'chirish</button>
       </div>
     </div>
   </div>
@@ -327,7 +336,7 @@
 
 <!-- Change Password Modal -->
 <div id="passwordModal"
-  style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1000;">
   <div class="settings-section" style="max-width: 400px;">
     <h2>Parolni o'zgartir</h2>
 
@@ -350,6 +359,29 @@
     <div class="button-group">
       <button class="btn btn-primary" onclick="changePassword()">Saqlash</button>
       <button class="btn btn-secondary" onclick="closePasswordModal()">Bekor qilish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal"
+  style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); align-items: center; justify-content: center; z-index: 1000;">
+  <div class="settings-section" style="max-width: 420px;">
+    <h2>Hisobni o'chirish</h2>
+    <p>Hisobingizni o'chirish qaytib bo'lmaydi. Iltimos, parolingizni kiriting va tasdiqlang.</p>
+
+    <div class="form-group">
+      <label>Parol</label>
+      <input type="password" id="deletePassword" placeholder="Parol" />
+    </div>
+    <div class="form-group">
+      <label>Hisobni o'chirishni tasdiqlang</label>
+      <input type="text" id="deleteConfirm" placeholder="DELETE deb yozing" />
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-danger" onclick="deleteAccount()">Hisobni o'chirish</button>
+      <button class="btn btn-secondary" onclick="closeDeleteAccountModal()">Bekor qilish</button>
     </div>
   </div>
 </div>
@@ -477,6 +509,7 @@
 
       const response = await fetch('/account/update-profile', {
         method: 'POST',
+        credentials: 'include',
         body: formData
       });
 
@@ -537,6 +570,7 @@
 
       const response = await fetch('/account/change-password', {
         method: 'POST',
+        credentials: 'include',
         body: formData
       });
 
@@ -555,6 +589,57 @@
   // Placeholder functions
   function enableTwoFA() {
     alert('Ikki faktorli autentifikatsiya oziq');
+  }
+
+  function showDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'flex';
+  }
+
+  function closeDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'none';
+    document.getElementById('deletePassword').value = '';
+    document.getElementById('deleteConfirm').value = '';
+  }
+
+  async function deleteAccount() {
+    const password = document.getElementById('deletePassword').value;
+    const confirmText = document.getElementById('deleteConfirm').value;
+
+    if (!password || !confirmText) {
+      alert('Iltimos, barcha maydonlarni to\'ldiring');
+      return;
+    }
+
+    if (confirmText.trim().toUpperCase() !== 'DELETE') {
+      alert('Hisobni o\'chirishni tasdiqlang: DELETE deb yozing.');
+      return;
+    }
+
+    if (!confirm('Hisobni o\'chirish qaytib bo\'lmaydi. Davom etishni xohlaysizmi?')) {
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('password', password);
+
+      const response = await fetch('/account/delete', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Hisob muvaffaqiyatli o\'chirildi');
+        window.location.href = '/auth';
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Hisob o\'chirilmadi');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Xatolik yuz berdi');
+    }
   }
 
   function logoutAllDevices() {

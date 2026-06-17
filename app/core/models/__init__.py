@@ -47,7 +47,6 @@ class Status(Base):
     picture = Column(String(255), nullable=True)
     animation = Column(String(255), nullable=True)
     color = Column(String(50), nullable=True)
-    name_color = Column(String(20), nullable=True)
     rank_color = Column(String(20), nullable=True)
 
     user = relationship("User", back_populates="status")
@@ -93,7 +92,7 @@ class ShopColor(Base):
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Integer, nullable=False, default=0)
-    picture = Column(String(255), nullable=True)
+    name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
 
@@ -300,3 +299,17 @@ class UserOptions(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     options = Column(String, default="[]") # [{"q_id": 1, "ans": "A"}, ...]
     end = Column(Boolean, default=False)
+
+# ==========================================
+# 9. ADMIN MODEL
+# ==========================================
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # Admin bo'lish uchun avval User jadvalida mavjud bo'lishi kerak
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    added_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # User bilan bog'lanish
+    user = relationship("User", backref="admin_profile")

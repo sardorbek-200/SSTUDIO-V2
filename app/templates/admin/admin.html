@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    .admin-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .admin-header {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .admin-grid {
+        width: 100%;
+        max-width: 1200px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .admin-card {
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 22px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        color: white;
+        cursor: pointer;
+    }
+
+    .admin-card h2 {
+        margin-bottom: 12px;
+    }
+
+    .admin-card p {
+        color: #d9d9ff;
+    }
+
+    .admin-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .admin-actions a {
+        padding: 12px 20px;
+        border-radius: 14px;
+        background: rgba(90, 0, 198, 0.9);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @media (max-width: 960px) {
+        .admin-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>Admin Panel</h1>
+            <p>Salom, {{ username }}. Siz admin huquqiga ega foydalanuvchisiz.</p>
+        </div>
+        <div class="admin-actions">
+            <a href="/app">Ilovalarga qaytish</a>
+            <a href="/settings">Sozlamalar</a>
+            <a href="/auth/logout">Chiqish</a>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-card" onclick="window.location.href= '/admin/users'">
+            <h2>Foydalanuvchi boshqaruvi</h2>
+            <p>Foydalanuvchilar ro'yxatini ko'rish, ularni bloklash va o'chirish .</p>
+        </div>
+        <div class="admin-card">
+            <h2>Testlar boshqaruvi</h2>
+            <p>Testlarni tasdiqlash, yangilash va o'chirish imkoniyatlari uchun bo'lim yaratish mumkin.</p>
+        </div>
+        <div class="admin-card">
+            <h2>Statistika</h2>
+            <p>Admin panel orqali tizim statistikasi, foydalanuvchi faoliyati va daromadlarni ko'rsatish qulay.</p>
+        </div>
+        <div class="admin-card">
+            <h2>Shop Boshqarish</h2>
+            <p>Siz SSHOPni bemalol boshqairsh imkoniyatiga egasiz.</p>
+        </div>
+        <div class="admin-card">
+            <h2>Admin Boshqaruvi</h2>
+            <p>Siz adminlar Boshqa olasiz.Ammo agar siz rasmiy adminni chetlashtirsangiz boshqa hech qachon  adminlika olinmaysiz</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

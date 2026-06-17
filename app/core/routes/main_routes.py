@@ -1,7 +1,7 @@
 from fastapi.responses import HTMLResponse
 from ..models import User,UserToken
 from sqlalchemy import select, func
-from fastapi import APIRouter, Request, Depends, Cookie
+from fastapi import APIRouter, Request, Depends, Cookie, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
@@ -77,6 +77,54 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
         "title": "Bosh sahifa"
     })
     response.set_cookie(key="access_token", value=dumps({"token": session.token}), httponly=True)
+    return response
+
+@router.get("/profile/{username}", response_class=HTMLResponse)
+async def profile_page(request: Request, username: str, db: AsyncSession = Depends(get_db), access_token: Annotated[str | None, Cookie()] = None):
+    profile_query = await db.execute(select(User).where(User.username == username))
+    profile_user = profile_query.scalar_one_or_none()
+    if not profile_user:
+        raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
+
+    status = "UNAUTHORIZED"
+    viewer_username = None
+    token_str = None
+
+    if access_token:
+        try:
+            cookie = loads(access_token)
+            token_str = cookie.get("token")
+        except Exception:
+            token_str = None
+
+    if token_str:
+        session_query = await db.execute(select(UserToken).where(UserToken.token == token_str))
+        session = session_query.scalar_one_or_none()
+        if session and session.ip_address == request.client.host:
+            viewer_query = await db.execute(select(User).where(User.id == session.user_id))
+            viewer = viewer_query.scalar_one_or_none()
+            if viewer:
+                status = "AUTHORIZED"
+                viewer_username = viewer.username
+
+    response = templates.TemplateResponse(
+        name="profile.html",
+        request=request,
+        context={
+            "request": request,
+            "status": status,
+            "theme": "dark",
+            "username": viewer_username,
+            "profile_user": profile_user,
+            "background": profile_user.background or "/static/images/default_bg.png",
+            "title": f"{profile_user.username} profili",
+            "iframe_src": f"/users/{profile_user.id}"
+        }
+    )
+
+    if status == "AUTHORIZED" and token_str:
+        response.set_cookie(key="access_token", value=dumps({"token": token_str}), httponly=True)
+
     return response
 
 @router.get("/clear-old-results")
