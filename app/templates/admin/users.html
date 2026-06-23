@@ -2,129 +2,244 @@
 
 {% block style %}
 <style>
-  .admin-users-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+    .admin-users-container {
+        width: 100%;
+        min-width: 500px;
+        overflow: auto;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
 
-  .admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-  }
+    button {
+        width: 100%;
+        background-color: transparent;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #c9e6ff;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
 
-  .admin-header a {
-    padding: 12px 18px;
-    border-radius: 14px;
-    background: rgba(90, 0, 198, 0.9);
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-  }
-
-  .users-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 20px;
-    overflow: hidden;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 16px 18px;
-    text-align: left;
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .users-table th {
-    background: rgba(255, 255, 255, 0.12);
-    font-weight: 700;
-  }
-
-  .users-table tr:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .user-actions a {
-    display: inline-block;
-    margin-right: 10px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(90, 0, 198, 0.9);
-    color: white;
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-
-  .user-actions a.danger {
-    background: rgba(255, 76, 76, 0.9);
-  }
-
-  @media (max-width: 900px) {
-    .users-table th,
-    .users-table td {
-      padding: 12px 10px;
+    button:hover {
+        border-radius: 20px;
     }
 
     .admin-header {
-      flex-direction: column;
-      align-items: flex-start;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
     }
-  }
+
+    .admin-header a {
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: rgba(90, 0, 198, 0.9);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 16px 18px;
+        text-align: left;
+        color: white;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .users-table th {
+        background: rgba(255, 255, 255, 0.12);
+        font-weight: 700;
+    }
+
+    .users-table tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .user-actions a {
+        display: inline-block;
+        margin-right: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(90, 0, 198, 0.9);
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: transparent;
+        color: #c9e6ff;
+        outline: none;
+    }
+
+    input:focus {
+        border-radius: 20px;
+    }
+
+    .user-actions a.danger {
+        background: rgba(255, 76, 76, 0.9);
+    }
+
+    @media (max-width: 900px) {
+
+        .users-table th,
+        .users-table td {
+            padding: 12px 10px;
+        }
+
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    .fixed {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        z-index: 9999;
+        min-width: 360px;
+        max-width: 480px;
+        padding: 24px;
+        pointer-events: auto;
+    }
+
+    .fixed:hover {
+        transform: translate(-50%, -50%) !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="admin-users-container">
-  <div class="admin-header">
-    <div>
-      <h1>Foydalanuvchilar boshqaruvi</h1>
-      <p>Admin: {{ username }}</p>
+    <div class="admin-header">
+        <div>
+            <h1>Foydalanuvchilar boshqaruvi</h1>
+            <p>Admin: {{ username }}</p>
+        </div>
+        <div>
+            <a href="/admin">Admin panelga qaytish</a>
+            <a href="/app">Ilovalarga qaytish</a>
+        </div>
     </div>
-    <div>
-      <a href="/admin">Admin panelga qaytish</a>
-      <a href="/app">Ilovalarga qaytish</a>
-    </div>
-  </div>
 
-  <table class="users-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Foydalanuvchi</th>
-        <th>Promo</th>
-        <th>Til</th>
-        <th>XP</th>
-        <th>sCoin</th>
-        <th>Ro'yxatdan o'tgan sana</th>
-        <th>Harakatlar</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
-      <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.promo }}</td>
-        <td>{{ user.language }}</td>
-        <td>{{ user.xp }}</td>
-        <td>{{ user.scoin }}</td>
-        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
-        <td class="user-actions">
-          <a href="/users/{{ user.id }}">Profil</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <table class="users-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Foydalanuvchi</th>
+                <th>Promo</th>
+                <th>Til</th>
+                <th>XP</th>
+                <th>sCoin</th>
+                <th>Ro'yxatdan o'tgan sana</th>
+                <th>Profil</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.promo }}</td>
+                <td>{{ user.language }}</td>
+                <td>{{ user.xp }}</td>
+                <td>{{ user.scoin }}</td>
+                <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                <td class="user-actions">
+                    <a href="/profile/{{ user.username }}">Profil</a>
+                    <a href="javascript:void(0);" onclick="editUser({{ user.id }})">EDIT</a>
+                    <a href="javascript:void(0);" onclick="deleteUser({{ user.id }})" class="danger">DELETE</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="edit" class="glass-card fixed"></div>
+    <div id="delete" class="glass-card fixed"></div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // DELETE funksiyasi: Foydalanuvchini o'chirish
+    async function deleteUser(id) {
+        if (confirm("Rostdan ham bu foydalanuvchini o'chirmoqchimisiz?")) {
+            try {
+                const response = await fetch(`/admin/delete_user/${id}`, { method: 'POST', credentials: 'include' });
+                if (response.ok) {
+                    location.reload(); // Sahifani yangilash
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.detail || "O'chirishda xatolik yuz berdi!");
+                }
+            } catch (error) {
+                console.error("Xatolik:", error);
+                alert("O'chirishda xatolik yuz berdi!");
+            }
+        }
+    }
+
+    // EDIT funksiyasi: Tahrirlash oynasini ochish
+    function editUser(id) {
+        const editDiv = document.getElementById('edit');
+        editDiv.style.display = 'block';
+        editDiv.innerHTML = `
+            <h3>Tahrirlash: ${id}</h3>
+            <input type="text" id="new_username" placeholder="Yangi foydalanuvchi nomi">
+            <input type="number" id="new_xp" placeholder="Yangi XP">
+            <input type="number" id="new_scoin" placeholder="Yangi sCoin">
+            <button onclick="saveEdit(${id})">Saqlash</button>
+            <button onclick="document.getElementById('edit').style.display='none'">Yopish</button>
+        `;
+    }
+
+    // Saqlash funksiyasi
+    async function saveEdit(id) {
+        const username = document.getElementById('new_username').value;
+        const xp = document.getElementById('new_xp').value;
+        const scoin = document.getElementById('new_scoin').value;
+
+        try {
+            const response = await fetch(`/admin/edit_user/${id}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, xp, scoin })
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                const errorData = await response.json();
+                alert(errorData.detail || 'Saqlashda xatolik yuz berdi!');
+            }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            alert('Saqlashda xatolik yuz berdi!');
+        }
+    }
+</script>
 {% endblock %}

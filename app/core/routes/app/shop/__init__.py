@@ -104,17 +104,15 @@ async def purchase_item(
         status = Status(user_id=user.id, rank="", color="", animation="")
         db.add(status)
         await db.flush()
-
     if item_type == "background":
         user.background = item.picture
     elif item_type == "rank":
         status.rank = item.name
-        status.color = getattr(item, "rank_color", status.color)
+        status.rank_color = getattr(item, "rank_color", status.rank_color)
     elif item_type == "animation":
         status.animation = getattr(item, "css_code", status.animation)
     elif item_type == "color":
-        status.color = getattr(item, "name_color", status.color)
-
+        status.color = getattr(item, "color", status.color)
     await db.commit()
 
     response_data = {

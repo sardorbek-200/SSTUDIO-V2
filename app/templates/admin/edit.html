@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    body {
+        background: url('{{ background }}') no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        color: #ffffff;
+    }
+
+    .question-badge {
+        display: inline-block;
+        width: 45px;
+        height: 45px;
+        line-height: 45px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        margin: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .question-badge:hover,
+    .question-badge.active {
+        background: #2563eb;
+        border-color: #3b82f6;
+    }
+
+    .question-content-box {
+        display: none;
+    }
+
+    .question-content-box.active {
+        display: block;
+    }
+
+    .form-control-glass {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        color: white;
+        margin-bottom: 15px;
+    }
+
+    .form-control-glass:focus {
+        border-color: #3b82f6;
+        outline: none;
+    }
+
+    .btn-save {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="glass-card">
+        <h3>🔍 Tahrirlash uchun testni tanlang</h3>
+        <select id="test-selector" class="form-control-glass" onchange="loadTestData(this.value)">
+            <option value="" disabled selected>-- Testni tanlang --</option>
+            {% for t in tests %}
+            <option value="{{ t.id }}">{{ t.title }} ({{ t.status }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="edit-zone" style="display: none;">
+
+        <div class="glass-card">
+            <h3>⚙️ Test Sozlamalari</h3>
+            <hr style="border-color: rgba(255,255,255,0.1)">
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Test Nomi:</label>
+                    <input type="text" id="test-title" class="form-control-glass">
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <label>Test Tavsifi:</label>
+                    <textarea id="test-desc" class="form-control-glass" rows="3"></textarea>
+                </div>
+            </div>
+            <button class="btn-save" onclick="saveTestInfo()">💾 Umumiy Ma'lumotlarni Saqlash</button>
+
+        </div>
+        <div class="glass-card">
+            <h3>❓ Savollar ro'yxati</h3>
+            <p class="text-muted">Tahrirlash uchun raqam ustiga bosing:</p>
+            <div class="d-flex flex-wrap" id="badges-container">
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3>📝 Savol Kontenti</h3>
+            <hr style="border-color: rgba(255,255,255,0.1)">
+            <div id="questions-inputs-container">
+            </div>
+        </div>
+
+        <div class="text-right mb-5">
+            <a href="/app/quizer/" class="btn-save" style="background: #ef4444; text-decoration: none;">🏁 Tahrirlashni
+                Yakunlash</a>
+            <button id="btn-finish" class="btn-save" style="background: #ef4444;" onclick="finishTest()">🔴 TESTNI
+                YAKUNLASH !!!</button>
+            <button onclick="forceStop()" class="btn-save" style="background: #ef4444;" onclick="finishTest()">🔴 TESTNI
+                O'chirish !!!</button>
+
+            <!-- Loglar chiqib turadigan chiroyli oyna -->
+            <div id="log-container"
+                style="background: #1e1e1e; color: #fff; padding: 15px; border-radius: 8px; margin-top: 20px; font-family: monospace; display: none;">
+                <h3>⏳ Jarayonlar ijrosi:</h3>
+                <div id="log-box"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+async function forceStop() {
+    // Dropdown (select) dan tanlangan test ID sini olamiz
+    const testId = document.getElementById('test-selector').value;
+    if (!testId) {
+        alert("Iltimos, avval testni tanlang!");
+        return;
+    }
+
+    if(confirm("Testni haqiqatdan ham majburiy to'xtatmoqchimisiz?")) {
+        // Manzilni loyihangdagi prefixga qarab aniqlashtir
+        const response = await fetch(`/app/quizer/edit/${testId}/force-stop`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if(result.status === "success") {
+            alert(result.message);
+            // Sahifani to'liq yangilash o'rniga statusni o'zgartirib qo'yish
+            location.reload(); 
+        } else {
+            alert("Xatolik: " + result.message);
+        }
+    }
+}
+</script>
+<script>
+    let currentGlobalQuestions = [];
+
+    // Frontendda test tanlanganda ishlaydigan asosiy asinxron mantiq
+    async function loadTestData(testId) {
+        if (!testId) return;
+
+        try {
+            // API orqali ma'lumotlarni tortamiz
+            const response = await fetch(`/app/quizer/api/get-test/${testId}`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                currentGlobalQuestions = data.questions || [];
+
+                // Tahrirlash zonasini birinchi ko'rinadigan qilamiz (Elementlar DOMda aniq paydo bo'lishi uchun)
+                const editZone = document.getElementById('edit-zone');
+                if (editZone) editZone.style.display = 'block';
+
+                // 1. Sozlamalarni xavfsiz to'ldiramiz (Optional chaining `?.` orqali element borligi tekshiriladi)
+                const titleInput = document.getElementById('test-title');
+                const descInput = document.getElementById('test-desc');
+
+                if (titleInput) titleInput.value = data.test && data.test.title ? data.test.title : '';
+                if (descInput) descInput.value = data.test && data.test.description ? data.test.description : '';
+
+                // 2. Badgelarni (Savol raqamlarini) generatsiya qilamiz
+                const badgesContainer = document.getElementById('badges-container');
+                const inputsContainer = document.getElementById('questions-inputs-container');
+                
+                if (badgesContainer) badgesContainer.innerHTML = '';
+                if (inputsContainer) inputsContainer.innerHTML = '';
+
+                if (currentGlobalQuestions.length === 0) {
+                    if (inputsContainer) inputsContainer.innerHTML = '<p class="text-warning">Ushbu testda savollar mavjud emas.</p>';
+                    return; // Savol bo'lmasa qolgan mantiqni bajarmaymiz
+                }
+
+                currentGlobalQuestions.forEach((q, index) => {
+                    // Badge yaratish
+                    const badge = document.createElement('div');
+                    badge.className = 'question-badge';
+                    badge.id = `badge-${q.id}`;
+                    badge.innerText = index + 1;
+                    badge.setAttribute('onclick', `openQuestion('${q.id}')`);
+                    if (badgesContainer) badgesContainer.appendChild(badge);
+
+                    // Savol formalarini html ko'rinishida yig'ish
+                    const qBox = document.createElement('div');
+                    qBox.className = 'question-content-box';
+                    qBox.id = `q-box-${q.id}`;
+                    qBox.innerHTML = `
+                        <h5>Savol #${index + 1} ni tahrirlash</h5>
+                        <label>Savol matni:</label>
+                        <input type="text" id="q-text-${q.id}" class="form-control-glass" value="${q.question_text || ''}">
+                        
+                        <div class="row">
+                            <div class="col-md-6"><label>Variant A:</label><input type="text" id="q-optA-${q.id}" class="form-control-glass" value="${q.option_a || ''}"></div>
+                            <div class="col-md-6"><label>Variant B:</label><input type="text" id="q-optB-${q.id}" class="form-control-glass" value="${q.option_b || ''}"></div>
+                            <div class="col-md-6"><label>Variant C:</label><input type="text" id="q-optC-${q.id}" class="form-control-glass" value="${q.option_c || ''}"></div>
+                            <div class="col-md-6"><label>Variant D:</label><input type="text" id="q-optD-${q.id}" class="form-control-glass" value="${q.option_d || ''}"></div>
+                        </div>
+                        
+                        <label>To'g'ri javob kaliti:</label>
+                        <select id="q-correct-${q.id}" class="form-control-glass" style="width: 150px;">
+                            <option value="A" ${q.correct_option === 'A' ? 'selected' : ''}>A</option>
+                            <option value="B" ${q.correct_option === 'B' ? 'selected' : ''}>B</option>
+                            <option value="C" ${q.correct_option === 'C' ? 'selected' : ''}>C</option>
+                            <option value="D" ${q.correct_option === 'D' ? 'selected' : ''}>D</option>
+                        </select>
+                        <button class="btn-save" style="background-color: #3b82f6;" onclick="saveQuestionInfo('${q.id}')">🔄 Ushbu Savolni Yangilash</button>
+                    `;
+                    if (inputsContainer) inputsContainer.appendChild(qBox);
+                });
+
+            } else {
+                alert('Test yuklashda xatolik yuz berdi!');
+            }
+        } catch (err) {
+            console.error("Ma'lumot yuklashda xatolik:", err);
+        }
+    }
+
+    // Raqam bosilganda mos keladigan savolni ochish
+    function openQuestion(qId) {
+        document.querySelectorAll('.question-content-box').forEach(box => box.classList.remove('active'));
+        document.querySelectorAll('.question-badge').forEach(badge => badge.classList.remove('active'));
+
+        const targetBox = document.getElementById('q-box-' + qId);
+        const targetBadge = document.getElementById('badge-' + qId);
+        
+        if (targetBox) targetBox.classList.add('active');
+        if (targetBadge) targetBadge.classList.add('active');
+    }
+
+    // Umumiy test sozlamalarini saqlash
+    async function saveTestInfo() {
+        const testSelector = document.getElementById('test-selector');
+        if (!testSelector || !testSelector.value) {
+            alert("Iltimos, avval testni tanlang!");
+            return;
+        }
+
+        const title = document.getElementById('test-title').value;
+        const description = document.getElementById('test-desc').value;
+        const testId = testSelector.value;
+
+        const response = await fetch(`/app/quizer/edit/${testId}/update-info`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description })
+        });
+
+        const resData = await response.json();
+        if (resData.status === 'success') {
+            alert('🎉 ' + resData.message);
+            // Dropdown matnini to'g'ri yangilash (Xato qavslar tuzatildi 🎯)
+            testSelector.options[testSelector.selectedIndex].text = `${title}`;
+        } else {
+            alert('❌ Xatolik yuz berdi!');
+        }
+    }
+
+    // Alohida bitta savolni bazada tahrirlash funktsiyasi
+    async function saveQuestionInfo(qId) {
+        const question_text = document.getElementById(`q-text-${qId}`).value;
+        const option_a = document.getElementById(`q-optA-${qId}`).value;
+        const option_b = document.getElementById(`q-optB-${qId}`).value;
+        const option_c = document.getElementById(`q-optC-${qId}`).value;
+        const option_d = document.getElementById(`q-optD-${qId}`).value;
+        const correct_option = document.getElementById(`q-correct-${qId}`).value;
+
+        const response = await fetch(`/app/quizer/edit/question/${qId}/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question_text, option_a, option_b, option_c, option_d, correct_option
+            })
+        });
+
+        const resData = await response.json();
+        if (resData.status === 'success') {
+            alert('🎉 ' + resData.message);
+        } else {
+            alert('❌ Savolni yangilashda xatolik yuz berdi!');
+        }
+    }
+
+    // Testni yakunlash asinxron oqimi (Stream)
+    async function finishTest() {
+        const btn = document.getElementById("btn-finish");
+        const logContainer = document.getElementById("log-container");
+        const logBox = document.getElementById("log-box");
+        const testSelector = document.getElementById('test-selector');
+
+        if (!testSelector || !testSelector.value) {
+            alert("Iltimos, avval tahrirlash uchun testni tanlang!");
+            return;
+        }
+
+        const testId = testSelector.value;
+
+        btn.disabled = true;
+        logContainer.style.display = "block";
+        logBox.innerHTML = "";
+
+        const payload = {
+            "user_id": 6,
+            "answers": { "45": "A", "46": "C", "47": "B" }
+        };
+
+        try {
+            const response = await fetch(`/app/quizer/submit-test/${testId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`HTTP xatolik! Status: ${response.status}`);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split("\n");
+
+                for (const line of lines) {
+                    let cleanLine = line.trim();
+                    if (cleanLine.startsWith("data: ")) {
+                        try {
+                            const rawJson = cleanLine.replace("data: ", "");
+                            const jsonData = JSON.parse(rawJson);
+
+                            const logLine = document.createElement("p");
+                            logLine.style.margin = "5px 0";
+
+                            if (jsonData.status === "success") {
+                                logLine.style.color = "#4CAF50";
+                            } else if (jsonData.status === "error") {
+                                logLine.style.color = "#F44336";
+                            } else {
+                                logLine.style.color = "#00BCD4";
+                            }
+
+                            logLine.innerText = jsonData.message;
+                            logBox.appendChild(logLine);
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                        } catch (e) {
+                            console.log("Oqim segmenti kutilmoqda...");
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Xatolik tafsiloti:", error);
+            const logLine = document.createElement("p");
+            logLine.style.color = "#F44336";
+            logLine.innerText = `❌ Xatolik yuz berdi: ${error.message}`;
+            logBox.appendChild(logLine);
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

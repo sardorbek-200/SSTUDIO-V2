@@ -81,7 +81,11 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
 
 @router.get("/profile/{username}", response_class=HTMLResponse)
 async def profile_page(request: Request, username: str, db: AsyncSession = Depends(get_db), access_token: Annotated[str | None, Cookie()] = None):
-    profile_query = await db.execute(select(User).where(User.username == username))
+    print(username)
+    # Bazadagi qiymatni tozalab solishtiramiz
+    profile_query = await db.execute(
+        select(User).where(func.trim(User.username) == username.strip())
+    )
     profile_user = profile_query.scalar_one_or_none()
     if not profile_user:
         raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")

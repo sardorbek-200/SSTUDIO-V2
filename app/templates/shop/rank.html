@@ -20,9 +20,8 @@
     <div class="glass-card">
         <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:12px;">
             <div style="width:40px; height:40px; border-radius:50%; background: {{ item.rank_color or '#777' }}; border: 2px solid rgba(255,255,255,0.25);"></div>
-            <h2 style="color: {{ item.name_color or '#fff' }};">{{ item.name }}</h2>
+            <h2 style="color: {{ item.rank_color or '#fff' }};">{{ item.name }}</h2>
         </div>
-        <img src="{{ item.picture or '/static/images/default_rank.png' }}" alt="{{ item.name }}" style="width:100%; border-radius: 16px; margin-bottom: 12px;" />
         <p>{{ item.description }}</p>
         <p><strong>Narx:</strong> {{ item.price }} scoin</p>
         <form class="shop-buy-form" method="post" action="/app/shop/buy">

@@ -1,4 +1,4 @@
-from fastapi import APIRouter,requests,Depends,Cookie
+from fastapi import APIRouter,Request,Depends,Cookie
 from app.core.models import UserToken, User, Admin
 from fastapi.responses import HTMLResponse,RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -15,9 +15,9 @@ templates = Jinja2Templates(directory=templates_path)
 router.include_router(quizer_router)
 router.include_router(shop_router)
 @router.get("/", response_class=HTMLResponse)
-async def apps(request: requests.Request, db: UserToken = Depends(get_db), access_token: Annotated[str, Cookie()] = None):
+async def apps(request: Request, db: UserToken = Depends(get_db), access_token: Annotated[str | None, Cookie()] = None):
     if access_token is None:
-        return RedirectResponse(url="/auth/sign-in",status_code=302)
+        return RedirectResponse(url="/auth/sign-in", status_code=302)
     session = loads(access_token)
     user_query = await db.execute(select(UserToken).where(UserToken.token == session.get("token")))
     user = user_query.scalar_one_or_none()

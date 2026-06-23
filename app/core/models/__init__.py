@@ -45,7 +45,7 @@ class Status(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     rank = Column(String(100), nullable=False)
     picture = Column(String(255), nullable=True)
-    animation = Column(String(255), nullable=True)
+    animation = Column(Text, nullable=True)
     color = Column(String(50), nullable=True)
     rank_color = Column(String(20), nullable=True)
 
@@ -92,7 +92,7 @@ class ShopColor(Base):
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Integer, nullable=False, default=0)
-    name = Column(String(255), nullable=True)
+    color = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
 
@@ -133,7 +133,6 @@ class ShopHistory(Base):
 # ==========================================
 class UserToken(Base):
     __tablename__ = "user_tokens"
-
     id = Column(Integer, primary_key=True, index=True)
     token = Column(String(255), unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

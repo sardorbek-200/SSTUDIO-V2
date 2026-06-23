@@ -15,21 +15,42 @@ from asyncio import sleep, create_task
 from sqlalchemy.ext.asyncio import AsyncSession
 from .core.database import AsyncSessionLocal
 from fastapi.staticfiles import StaticFiles
+import asyncio
 # Har 30 minutda bazani eski tokenlardan tozalash funksiyasi
-async def cleanup_expired_sessions(db: AsyncSession):
-    threshold = datetime.now() - timedelta(minutes=30)
-    query = delete(UserToken).where(UserToken.last_activity < threshold)
-    await db.execute(query)
-    await db.commit()
-    await sleep(15 * 60)
+# O'zingning bazang va modelingni import qilib olasan:
+# from ....database import AsyncSessionLocal 
+# from ....models import UserToken
+
+async def cleanup_expired_sessions():
+    # Cheksiz sikl — server o'chguncha tinmay aylanadi
+    while True:
+        try:
+            # Har safar tozalash uchun yangi, qisqa muddatli baza aloqasini ochamiz
+            async with AsyncSessionLocal() as db:
+                threshold = datetime.now() - timedelta(hours=10)
+                query = delete(UserToken).where(UserToken.created_at < threshold)
+                
+                result = await db.execute(query)
+                await db.commit()
+                
+                print(f"[{datetime.now()}] Eski sessiyalar tozalandi!")
+                
+        except Exception as e:
+            # Agar bazada biror xato bo'lsa, server o'chib qolmasligi uchun
+            print(f"Tozalashda xatolik: {e}")
+            
+        # Mana shu yerda 15 minut (15 * 60 sekund) kutadi va keyin tepaga qaytadi
+        await asyncio.sleep(15 * 60)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Server yoqilganda
-    async with AsyncSessionLocal() as db:
-        # Funksiyaga db argumentini beramiz
-        task = create_task(cleanup_expired_sessions(db=db)) 
-        yield
-    # Shutdown: Server o'chirilganda
+    # Startup: Server yoqilganda fonda cheksiz vazifani boshlaymiz
+    # Endi db ni argument qilib berish shart emas, funksiyani o'zi ochadi
+    task = asyncio.create_task(cleanup_expired_sessions()) 
+    
+    yield  # Shu joyda server ishlayveradi...
+    
+    # Shutdown: Server o'chirilganda fondagi vazifani to'xtatamiz
     task.cancel()
 app = FastAPI(
     title=Settings.PROJECT_NAME,

@@ -25,9 +25,6 @@
             </div>
             <div style="width:40px; height:40px; border-radius:50%; background: {{ item.name if item.name.startswith('#') else '#ffffff' }}; border:1px solid rgba(255,255,255,0.2);"></div>
         </div>
-        <div style="border-radius:20px; overflow:hidden; margin-bottom:12px; border:1px solid rgba(255,255,255,0.15);">
-            <img src="{{ item.picture or '/static/images/default_bg.png' }}" alt="{{ item.name }}" style="width:100%; height:180px; object-fit:cover; display:block;" />
-        </div>
         <p>{{ item.description }}</p>
         <p><strong>Narx:</strong> {{ item.price }} scoin</p>
         <form class="shop-buy-form" method="post" action="/app/shop/buy">

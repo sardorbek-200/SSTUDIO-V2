@@ -16,7 +16,7 @@ router = APIRouter(prefix="/users")
 router.include_router(list_router)
 
 @router.get("/{id}")
-async def quizer(request: Request, db = Depends(get_db), access_token: Annotated[str | None, Cookie()] = None):
+async def quizer(id:int,request: Request, db = Depends(get_db), access_token: Annotated[str | None, Cookie()] = None):
     if not access_token:
         return RedirectResponse(url="/auth/login")
         
@@ -37,7 +37,7 @@ async def quizer(request: Request, db = Depends(get_db), access_token: Annotated
     if session.ip_address != client_ip:
         return RedirectResponse(url="/auth/login")
         
-    user_query = await db.execute(select(User).where(User.id == session.user_id))
+    user_query = await db.execute(select(User).where(User.id == id))
     user = user_query.scalar_one_or_none()
     
     if not user:

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    .admin-users-container {
+        width: 100%;
+        min-width: 500px;
+        overflow: auto;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    button {
+        width: 100%;
+        background-color: transparent;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #c9e6ff;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    button:hover {
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .admin-header a, .btn-add {
+        padding: 12px 18px;
+        border-radius: 14px;
+        background: rgba(90, 0, 198, 0.9);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    
+    .btn-add {
+        background: rgba(0, 198, 90, 0.9);
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 16px 18px;
+        text-align: left;
+        color: white;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .users-table th {
+        background: rgba(255, 255, 255, 0.12);
+        font-weight: 700;
+    }
+
+    .users-table tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .user-actions a, .user-actions button {
+        display: inline-block;
+        margin-right: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(90, 0, 198, 0.9);
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+    }
+
+    .user-actions button.danger {
+        background: rgba(255, 76, 76, 0.9);
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        margin: 15px 0;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        outline: none;
+        cursor: pointer;
+    }
+
+    select:focus {
+        border-radius: 20px;
+        border-color: #a353ff;
+    }
+
+    @media (max-width: 900px) {
+        .users-table th,
+        .users-table td {
+            padding: 12px 10px;
+        }
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    .fixed {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        z-index: 9999;
+        min-width: 360px;
+        max-width: 480px;
+        padding: 24px;
+        pointer-events: auto;
+    }
+    .fixed:hover {
+        transform: translate(-50%,-50%);
+    }
+    .glass-card {
+        width: fit-content;
+    }
+    .glass-card:hover {
+        transform: scale(1,1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-users-container">
+    <div class="admin-header glass-card">
+        <div>
+            <h1>Adminlar Boshqaruvi</h1>
+            <p>Siz: <span style="color: #00ffcc; font-weight: bold;">{{ username }}</span></p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap;gap: 10px;">
+            <button class="btn-add" onclick="openAddAdminModal()">+ Yangi Admin Tayinlash</button>
+            <a href="/admin/users">Foydalanuvchilarga o'tish</a>
+            <a href="/admin">Panelga qaytish</a>
+        </div>
+    </div>
+
+    <table class="users-table glass-card">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Admin Foydalanuvchi Nomi</th>
+                <th>XP / sCoin</th>
+                <th>Tayinlangan Vaqti</th>
+                <th>Amallar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for admin_obj in admins %}
+            <tr>
+                <td>{{ admin_obj.id }}</td>
+                <td style="font-weight: bold; color: #d7b5ff;">{{ admin_obj.user.username }}</td>
+                <td>{{ admin_obj.user.xp }} XP / {{ admin_obj.user.scoin }}</td>
+                <td>{{ admin_obj.added_at.strftime('%Y-%m-%d %H:%M') if admin_obj.added_at else 'N/A' }}</td>
+                <td class="user-actions">
+                    <a href="/profile/{{ admin_obj.user.username }}">Profil</a>
+                    
+                    {% if admin_obj.user.username != username %}
+                        <button onclick="removeAdmin({{ admin_obj.id }})" class="danger">O'chirish</button>
+                    {% else %}
+                        <span style="color: #00ffcc; font-size: 0.85rem; margin-left: 10px;">(O'zingiz)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #aaa;">Tizimda boshqa adminlar mavjud emas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="add-admin-modal" class="glass-card fixed">
+        <h3 style="margin-bottom: 5px;">Yangi Admin Qo'shish</h3>
+        <p style="font-size: 0.85rem; color: #ccc;">Admin bo'lmagan foydalanuvchilar ro'yxati:</p>
+        
+        <select id="new_admin_username">
+            <option value="" disabled selected>-- Tanlang --</option>
+            {% for user in non_admins %}
+                <option value="{{ user.username }}" style="color: black;">
+                    {{ user.username }} (ID: {{ user.id }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <button onclick="saveNewAdmin()" style="background: rgba(0, 198, 90, 0.9); margin-top: 15px; font-weight: bold;">Tasdiqlash</button>
+        <button onclick="document.getElementById('add-admin-modal').style.display='none'" class="danger">Bekor qilish</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    function openAddAdminModal() {
+        document.getElementById('add-admin-modal').style.display = 'block';
+    }
+
+    async function saveNewAdmin() {
+        const username = document.getElementById('new_admin_username').value;
+        if (!username) {
+            alert("Iltimos, ro'yxatdan foydalanuvchini tanlang!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/add_admin`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                location.reload(); 
+            } else {
+                alert(data.detail || "Xatolik yuz berdi!");
+            }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            alert("Tarmoq xatoligi yuz berdi!");
+        }
+    }
+
+    async function removeAdmin(admin_id) {
+        if (confirm("Ushbu foydalanuvchidan adminlik huquqini olib tashlamoqchimisiz?")) {
+            try {
+                const response = await fetch(`/admin/remove_admin/${admin_id}`, { 
+                    method: 'POST', 
+                    credentials: 'include' 
+                });
+                
+                if (response.ok) {
+                    location.reload(); 
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.detail || "Xatolik yuz berdi!");
+                }
+            } catch (error) {
+                console.error("Xatolik:", error);
+                alert("Server bilan aloqa uzildi!");
+            }
+        }
+    }
+</script>
+{% endblock %}

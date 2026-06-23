@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-wrapper" style="padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+    
+    <div class="cards-row" style="display: flex; gap: 20px; width: 680px; justify-content: space-between;">
+        <div class="glass-card" style="padding: 15px 25px; flex: 1; text-align: center;">
+            <p style="margin: 0; color: #aaa; font-size: 14px;">Ishlatilgan Jami sCoin</p>
+            <h2 style="margin: 5px 0 0 0; color: #f1c40f; font-size: 28px;">{{ total_scoin_used }} 🪙</h2>
+        </div>
+        <div class="glass-card" style="padding: 15px 25px; flex: 1; text-align: center;">
+            <p style="margin: 0; color: #aaa; font-size: 14px;">Faol Sessiyalar (UserToken)</p>
+            <h2 style="margin: 5px 0 0 0; color: #3498db; font-size: 28px;">{{ active_sessions }} ⚡</h2>
+        </div>
+    </div>
+
+    <div class="chart-box glass-card" style="padding: 20px; width: fit-content;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Sstudio Tizimli Analitika Markazi</h3>
+            <div style="display: flex; gap: 15px; font-size: 12px;">
+                <span style="color: #2ecc71 !important;">● Foydalanuvchilar</span>
+                <span style="color: #9b59b6 !important;">● Faol Testlar</span>
+                <span style="color: #e74c3c !important;">● Yakunlangan Testlar</span>
+                <span style="color: #f1c40f !important;">● sCoin Operatsiyalari</span> </div>
+        </div>
+        
+        <div style="display: flex; align-items: flex-end;">
+            <div style="display: flex; flex-direction: column; justify-content: space-between; height: 140px; margin-right: 10px; font-family: sans-serif; font-size: 11px; color: #777; text-align: right; width: 40px; padding-bottom: 2px;">
+                <span id="maxYText">--</span>
+                <span id="midYText">--</span>
+                <span>0</span>
+            </div>
+
+            <svg id="combinedSvg" width="600" height="200" style="border-bottom: 2px solid #555; border-left: 2px solid #555; overflow: visible;">
+                <path id="usersLine" d="" fill="none" stroke="#2ecc71" stroke-width="3" />
+                <circle id="usersDot" r="5" fill="#2ecc71" stroke="#fff" stroke-width="2" style="display:none;" />
+
+                <path id="testsLine" d="" fill="none" stroke="#9b59b6" stroke-width="3" />
+                <circle id="testsDot" r="5" fill="#9b59b6" stroke="#fff" stroke-width="2" style="display:none;" />
+
+                <path id="resultsLine" d="" fill="none" stroke="#e74c3c" stroke-width="3" />
+                <circle id="resultsDot" r="5" fill="#e74c3c" stroke="#fff" stroke-width="2" style="display:none;" />
+
+                <path id="scoinLine" d="" fill="none" stroke="#f1c40f" stroke-width="3" />
+                <circle id="scoinDot" r="5" fill="#f1c40f" stroke="#fff" stroke-width="2" style="display:none;" />
+            </svg>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; width: 600px; margin-left: 50px; margin-top: 10px; font-family: sans-serif; font-size: 12px; color: #888;">
+            <span id="globalStartDate">--</span>
+            <span id="globalMidDate">--</span>
+            <span id="globalEndDate">--</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const response = await fetch('/admin/api/combined-chart-data');
+    if (!response.ok) return;
+    
+    const rawData = await response.json();
+
+    const svgWidth = 600;
+    const svgHeight = 200;
+    const availableHeight = svgHeight - 60; // topPadding = 60
+
+    // Xavfsizlik: agar scoin massivi backenddan kelmay qolsa, bo'sh massiv deb oladi
+    const scoinData = rawData.scoin || [];
+
+    // --- 1. GLOBAL VAQT VA MAKSIMAL QIYMAT CHEGARALARINI ANIQLASH ---
+    let allTimestamps = [
+        ...rawData.users.map(u => u.timestamp),
+        ...rawData.tests.map(t => t.timestamp),
+        ...rawData.results.map(r => r.timestamp),
+        ...scoinData.map(s => s.timestamp) // sCoin vaqtlari qo'shildi
+    ].sort((a, b) => a - b);
+
+    if (allTimestamps.length === 0) return;
+
+    const minTime = allTimestamps[0];
+    const maxTime = allTimestamps[allTimestamps.length - 1];
+    const totalDuration = maxTime - minTime || 1;
+
+    // Eng katta ma'lumotlar to'plami hajmini topamiz (sCoin ro'yxati ham solishtiriladi)
+    const maxCount = Math.max(
+        rawData.users.length, 
+        rawData.tests.length, 
+        rawData.results.length,
+        scoinData.length
+    ) || 1;
+
+    // O'qlardagi matnlarni yozish
+    document.getElementById('globalStartDate').innerText = new Date(minTime * 1000).toLocaleDateString();
+    document.getElementById('globalEndDate').innerText = new Date(maxTime * 1000).toLocaleDateString();
+    document.getElementById('globalMidDate').innerText = new Date((minTime + totalDuration / 2) * 1000).toLocaleDateString();
+
+    document.getElementById('maxYText').innerText = maxCount;
+    document.getElementById('midYText').innerText = Math.round(maxCount / 2);
+
+    // --- 2. AYRI-AYRI CHIZIQLARNI CHIZISH FUNKSIYASI ---
+    function drawCombinedLine(dataList, lineId, dotId) {
+        if (!dataList || dataList.length < 1) return;
+
+        // Har bir elementni umumiy global vaqt o'qiga ko'ra proporsiyalash
+        const points = dataList.map((item, index) => {
+            const timeRatio = (item.timestamp - minTime) / totalDuration;
+            const valueRatio = (index + 1) / maxCount;
+            return {
+                x: timeRatio * svgWidth,
+                y: svgHeight - (valueRatio * availableHeight)
+            };
+        });
+
+        // Agar kamida 2 ta nuqta bo'lsa silliq chiziq chizamiz
+        if (points.length >= 2) {
+            let d = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                let cp1x = points[i-1].x + (points[i].x - points[i-1].x) / 2;
+                d += ` C ${cp1x} ${points[i-1].y}, ${cp1x} ${points[i].y}, ${points[i].x} ${points[i].y}`;
+            }
+            document.getElementById(lineId).setAttribute('d', d);
+        }
+
+        // Oxirgi nuqtadagi doirachani joylashtirish
+        const lastP = points[points.length - 1];
+        const dot = document.getElementById(dotId);
+        dot.setAttribute('cx', lastP.x);
+        dot.setAttribute('cy', lastP.y);
+        dot.style.display = 'block';
+    }
+
+    // --- 3. BARCHA TO'RTHA CHIZIQLARNI ISHGA TUSHIRISH ---
+    drawCombinedLine(rawData.users, 'usersLine', 'usersDot');
+    drawCombinedLine(rawData.tests, 'testsLine', 'testsDot');
+    drawCombinedLine(rawData.results, 'resultsLine', 'resultsDot');
+    drawCombinedLine(scoinData, 'scoinLine', 'scoinDot'); // sCoin liniyasi chiziladi
+});
+</script>
+{% endblock %}

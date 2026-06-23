@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.models import UserToken, User, Tests, Questions
+from ..admin.check import checkadmin
 from ....config import templates_path
 
 templates = Jinja2Templates(directory=templates_path)
@@ -47,7 +48,7 @@ async def edit_main_page(
         return RedirectResponse(url="/auth/login")
 
     # Barcha mavjud testlarni select qilish (o'quvchi/admin tanlashi uchun)
-    tests_query = await db.execute(select(Tests))
+    tests_query = await db.execute(select(Tests).where(Tests.status=='active',Tests.user_id==user.id))
     all_tests = tests_query.scalars().all()
 
     return templates.TemplateResponse(
@@ -68,12 +69,33 @@ async def edit_main_page(
 # ⚡ 2. API ENDPOINT: TANLANGAN TEST MA'LUMOTLARINI DINAMIK OLISH
 # --------------------------------------------------------------------------
 @router.get("/api/get-test/{test_id}")
-async def api_get_test_data(test_id: int, db: AsyncSession = Depends(get_db)):
+async def api_get_test_data(
+    test_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    access_token: Annotated[str | None, Cookie()] = None,
+):
+    # Faqat test muallifi yoki admin test ma'lumotlarini olishi mumkin
+    session = await get_current_user(db, access_token)
+    if not session or session.ip_address != request.client.host:
+        return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
+    user_q = await db.execute(select(User).where(User.id == session.user_id))
+    user = user_q.scalar_one_or_none()
+    if not user:
+        return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
     # Test mantiqini olish
-    test_query = await db.execute(select(Tests).where(Tests.id == test_id, Tests.status == "active"))
+    test_query = await db.execute(select(Tests).where(Tests.id == test_id))
     test = test_query.scalar_one_or_none()
     if not test:
         return JSONResponse({"status": "error", "message": "Test topilmadi"}, status_code=404)
+
+    # Egasi yoki admin bo'lmasa ruxsat yo'q
+    if test.user_id != user.id:
+        is_admin = await checkadmin(db, user)
+        if not is_admin:
+            return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
 
     # Savollarni olish
     questions_query = await db.execute(select(Questions).where(Questions.test_id == test_id))
@@ -109,9 +131,37 @@ async def api_get_test_data(test_id: int, db: AsyncSession = Depends(get_db)):
 async def update_question_data(
     question_id: int,
     data: dict,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    access_token: Annotated[str | None, Cookie()] = None,
 ):
     try:
+        # Avvalo so'rov yuborgan foydalanuvchini aniqlaymiz
+        session = await get_current_user(db, access_token)
+        if not session:
+            return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
+        user_q = await db.execute(select(User).where(User.id == session.user_id))
+        user = user_q.scalar_one_or_none()
+        if not user:
+            return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
+        # So'rov qilingan savol va uning testi mavjudligini tekshiramiz
+        q_query = await db.execute(select(Questions).where(Questions.id == question_id))
+        q_obj = q_query.scalar_one_or_none()
+        if not q_obj:
+            return JSONResponse({"status": "error", "message": "Savol topilmadi"}, status_code=404)
+
+        test_query = await db.execute(select(Tests).where(Tests.id == q_obj.test_id))
+        test = test_query.scalar_one_or_none()
+        if not test:
+            return JSONResponse({"status": "error", "message": "Test topilmadi"}, status_code=404)
+
+        # Faqat test muallifi yoki admin tahrirlashi mumkin
+        if test.user_id != user.id:
+            is_admin = await checkadmin(db, user)
+            if not is_admin:
+                return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
+
         # Kelayotgan ma'lumotlarni model maydonlariga moslab olamiz
         stmt = update(Questions).where(Questions.id == question_id).values(
             question_text=data.get("question_text"),
@@ -135,9 +185,31 @@ async def update_question_data(
 async def update_test_info(
     test_id: int,
     data: dict,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    access_token: Annotated[str | None, Cookie()] = None,
 ):
     try:
+        # Avvalo so'rov yuborgan foydalanuvchini aniqlaymiz
+        session = await get_current_user(db, access_token)
+        if not session:
+            return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
+        user_q = await db.execute(select(User).where(User.id == session.user_id))
+        user = user_q.scalar_one_or_none()
+        if not user:
+            return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=401)
+
+        # Testni olamiz va muallifligini tekshiramiz
+        test_query = await db.execute(select(Tests).where(Tests.id == test_id))
+        test = test_query.scalar_one_or_none()
+        if not test:
+            return JSONResponse({"status": "error", "message": "Test topilmadi"}, status_code=404)
+
+        if test.user_id != user.id:
+            is_admin = await checkadmin(db, user)
+            if not is_admin:
+                return JSONResponse({"status": "error", "message": "Access denied"}, status_code=403)
+
         # Kelgan JSON ma'lumotlarini bazada yangilaymiz
         stmt = update(Tests).where(Tests.id == test_id).values(
             title=data.get("title"),

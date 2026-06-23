@@ -1,6 +1,6 @@
 <div class="user-card">
     <div class="user-avatar">
-        <img src="{{ status.picture if status.picture else '/static/icon/dark_icon.png' }}" alt="User avatar" />
+        <span>{{ user.username[0] }}</span>
     </div>
     <div class="user-info">
         <div class="user-header">
@@ -9,7 +9,7 @@
                 <div class="user-rank">
                     << {{ status.rank if status.rank else "USER" }} >>
                 </div>
-                <a class="user-connect"  href='https://salogram.studio.uz/chat/{{ user.id }}' target="_parent">
+                <a class="user-connect"  href='https://salogram.sstudio.uz/chat/{{ user.id }}' target="_parent">
                     Bog'lanish
                 </a>
             </div>
@@ -18,16 +18,21 @@
 </div>
 
 <style>
+    html {
+        overflow: hidden;
+    }
     .user-card {
         display: inline-flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        min-width: 400px;
-        width: 100%;
-        max-width: 760px;
+        width: 80%;
+        height: 110px;
         padding: 18px;
+        flex: 0 0 auto;
+        min-width: 400px;
         gap: 16px;
-        background: #{{status.color if status.color else 'ffffff'}}38;
+        margin: 0;
+        background: {{status.color if status.color else '#ffffff'}}38 !important;
         border: 1px solid rgba(15, 23, 42, 0.12);
         border-radius: 20px;
         box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
@@ -35,19 +40,19 @@
     }
 
     .user-avatar {
-        flex: 0 0 112px;
-        width: 112px;
-        height: 112px;
-        border-radius: 24px;
+        flex: 0 0 64px;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
         overflow: hidden;
-        animation: float 5s ease-in-out infinite;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: {{status.color if status.color else '#ffffff'}};
     }
-
-    .user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
+    .user-avatar span {
+        font-size :64px;
+        text-transform: uppercase;
     }
 
     .user-info {
@@ -68,15 +73,16 @@
     .user-name {
         font-size: 1.25rem;
         font-weight: 700;
-        color: #111827;
+        color: {{status.color if status.color else '#ffffff'}};
         margin-bottom: 6px;
     }
 
     .user-rank {
         font-size: 2em;
+        text-transform: uppercase;
         font-family: monospace;
         color: {{ status.rank_color if status.rank_color else '#111827' }};
-
+        
     }
-    {{ status.animation }}
+    {{ status.animation | safe}}
 </style>
