@@ -9,6 +9,6 @@ async def logout():
     response = RedirectResponse(url="/", status_code=303)
     
     # 2. Brauzerdagi cookieni o'chirib tashlaymiz
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="access_token",domain=".sstudio.uz")
     
     return response

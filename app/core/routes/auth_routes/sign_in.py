@@ -85,6 +85,10 @@ async def sign_in_post(
     await db.commit()
     
     # Agar hammasi muvaffaqiyatli bo'lsa, foydalanuvchini bosh sahifaga yo'naltiramiz
+    host = request.headers.get("host") # Bu yerdan foydalanuvchi qaysi manzil bilan kirganini bilamiz
+
+    # Agar host IP-manzil bo'lsa, domain ni None qilamiz
+    domain_val = None if host.replace(".", "").isdigit() else ".sstudio.uz"
     response = RedirectResponse(url="/", status_code=303)
-    response.set_cookie(key="access_token", value=dumps({'token':random_token}), httponly=True) # 10 daqiqa
+    response.set_cookie(key="access_token",domain=domain_val, value=dumps({'token':random_token}), httponly=True) # 10 daqiqa
     return response

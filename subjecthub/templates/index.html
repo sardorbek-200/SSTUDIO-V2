@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block style %}
+<style>
+    .layout {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        /* 👈 Buni o'zgartir, center hamma narsani siqib qo'yadi */
+        gap: 20px;
+        width: 100%;
+    }
+
+    @media screen and (max-width: 990px) {
+        .layout {
+            flex-wrap: wrap;
+        }
+    }
+
+    .layourhorizantal {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        /* 👈 Buni o'zgartir, center hamma narsani siqib qo'yadi */
+        gap: 20px;
+        width: 100%;
+    }
+
+    .column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 33.3%;
+        min-width: 300px;
+    }
+
+    .link {
+        padding: 5px;
+        border-image: radial-gradient(circle, rgba(0, 242, 254, 0.4) 0%, rgba(0, 242, 254, 0.1) 50%, transparent 70%);
+        font-size: xx-large;
+        font-family: monospace;
+
+    }
+
+    .link:hover {
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .go {
+        font-size: 2.5em;
+        border-radius: 20px;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .go-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.5s;
+        overflow: hidden;
+    }
+
+    @keyframes circle {
+        0% {
+            transform: translateX(-50%);
+        }
+
+        100% {
+            transform: translateX(0%) linear;
+        }
+    }
+
+    .go.cicle {
+        width: 300%;
+        animation: circle 1s infinite;
+    }
+
+    .user {
+        width: 100%;
+        margin: 5px;
+        padding: 10px;
+        background-color: rgba(0, 242, 254, 0.2);
+        border-radius: 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .div {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .divfor {
+        height: 100%;
+        width: fit-content;
+        transition: all 2s;
+
+    }
+
+    .divfor img {
+        height: 100%;
+        transition: all 0.5s;
+    }
+
+
+    .divfor img:nth-child(2) {
+        transform: translate(100vw, 100vh);
+    }
+
+    .divfor img:nth-child(1) {
+        transform: translate(-100vw, -100vh);
+    }
+
+    .divfor.ac img:nth-child(2) {
+        transform: translate(-5px, 0);
+    }
+
+    .divfor.ac img:nth-child(1) {
+        transform: translate(0, 0);
+    }
+
+    .divfor.act {
+        transform: scale(2, 2);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="layout">
+    {% if status=="UNAUTHORIZED" %}
+    <div class="glass-card">
+        <h3>Siz Tizimda kirmagansiz 3 Soniyada Login sahifasida o'tasiz</h3>
+    </div>
+    {% else %}
+    <div class="column">
+        <div class="glass-card">
+            <h1>Boshlaymizmi {{ username }}?</h1>
+        </div>
+        <div class="glass-card go-content">
+            <p style="cursor: pointer;" class="link go" onclick="go()" id="go">Olg'a</p>
+        </div>
+        <div class="glass-card" style="display: flex; flex-direction: column; align-items: flex-start; gap: 15px;">
+            <a href="javascript:history.back()" class="link">
+                ← Orqaga
+            </a>
+            <a href="/wallet" class="link">Hamyon</a>
+            <a href="/app/shop" class="link">Do'kon</a>
+            <a href="/xpleardboard" class="link">Learboard</a>
+            <a href="/profile/{{ username }}" class="link">Profil</a>
+        </div>
+
+    </div>
+    <div class="column">
+        <div class="layourhorizantal">
+            <div class="glass-card">
+                <h1>SCOIN</h1>
+                <p>{{ scoin }}</p>
+            </div>
+            <div class="glass-card">
+                <h1>XP</h1>
+                <p>{{ xp }}</p>
+            </div>
+        </div>
+        <div class="glass-card" style="width: 100%;">
+            <h2 style="font-size: 3em;text-transform: capitalize;">Subject Hub Gamesga Xush Kelibsiz {{ username }}</h2>
+        </div>
+    </div>
+    <div class="column">
+        <div class="glass-card">
+            <h3>Top 15</h3>
+            {% set counter = namespace(value=0) %}
+            {% for i in top_users %}
+            {% set counter.value = counter.value + 1 %}
+            <div class="user" style="{% if username==i.username %}background-color: blueviolet;{% endif %}">
+                <p>{{ counter.value }}</p>
+                <p>{{ i.username }}</p>
+                <p>{{ i.xp }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="div">
+        <div class="divfor" id="divfor">
+            <img src="/static/images/halfone.png" alt="">
+            <img src="/static/images/halftwo.png" alt="">
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    async function play() {
+        window.location.href = "/subjecthub/play"
+    }
+    async function go() {
+        const divfor = document.getElementById("divfor");
+        divfor.classList.add("ac");
+        setTimeout(() => {
+            divfor.classList.add("act");
+        }, 1000);
+        setTimeout(play, 2000)
+    }
+    {% if status == "UNAUTHORIZED" %}
+    async function go() {
+        window.location.href = "/auth/"
+    }
+    setTimeout(go, 3000)
+    {% endif %}
+</script>
+{% endblock %}

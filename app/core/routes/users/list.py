@@ -122,6 +122,4 @@ async def user_detail(
             "status": status,
         },
     )
-    if access_token:
-        response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response

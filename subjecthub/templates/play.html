@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block style %}
+
+<style>
+    .loading-page {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 50;
+    }
+
+    .spinner {
+        width: 80px;
+        height: 80px;
+        border-top: 5px solid #00ffcc;
+        border-bottom: 5px solid #ff00cc;
+        border-left: 5px solid #ffcc00;
+        border-right: 5px solid #00cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    .percentage {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .status-loading {
+        background-color: aquamarine;
+        height: 10px;
+        border-radius: 5px;
+        transition: all 0.3s;
+        overflow: hidden;
+    }
+
+    .status-loading-in {
+        background-color: greenyellow;
+        height: 10px;
+        border-radius: 5px;
+        transition: all 0.3s;
+        width: 100%;
+        transform: translateX(-100%);
+    }
+    @media screen and (orientation: portrait) {
+        .rotate-screen-message {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            color: white;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+<div class="loading-page">
+    <div class="glass-card">
+        <h1>Subject Hub Yuklanmoqda</h1>
+        <div class="spinner" style="margin: 0 auto;display: inline-block;"></div>
+        <div class="percentage" id="percentage">0%</div>
+        <div class="text">LOADING...</div>
+        <div class="status-loading">
+            <div class="status-loading-in" id="visual-loading"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="game-content"></div>
+{% endblock %}
+
+
+{% block js %}
+
+<script>
+    const loading = document.getElementById("percentage");
+    const loading_visual = document.getElementById("visual-loading")
+    let persen = 0;
+
+
+    function loadCSS(filename) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.type = "text/css";
+        link.href = filename;
+        link.onload = () => {
+            persen += 2;
+            update_per(persen);
+        };
+        link.onerror = () => {
+            console.error(`${filename} yuklanmadi!`);
+            // Foydalanuvchiga xabar berish
+            document.getElementById("percentage").innerText = "Xatolik!";
+            document.querySelector(".text").innerText = "Yuklab bo'lmadi, sahifani yangilang (F5)";
+            return
+        };
+        document.head.appendChild(link);
+    }
+
+
+    function update_per(per) {
+        loading.innerText = `${per}%`;
+        loading_visual.style.transform = `translateX(${per - 100}%)`
+    }
+
+    // Rasmni oldindan yuklovchi funksiya
+    function preloadImage(url, callback) {
+        const img = new Image();
+        img.src = url;
+
+        // Rasm yuklanib bo'lgach chaqiriladi
+        img.onload = () => {
+            console.log(`Rasm keshga yuklandi: ${url}`);
+            callback(); // Foizni oshiradigan funksiyani chaqiramiz
+        };
+
+        // Agar rasmda xato bo'lsa
+        img.onerror = () => {
+            console.error(`Rasm yuklashda xatolik: ${url}`);
+            callback(); // Xato bo'lsa ham "yuklandi" deb hisoblab foizni oshirib ketamiz
+        };
+    }
+
+    window.onload = function () {
+        // 0% holati
+        loading.innerText = "0%";
+        loading_visual.style.transform = "translateX(-100%)";
+        persen = 0
+
+        loadCSS("/static/css/subjecthub/style.css")
+        loadCSS("/static/css/subjecthub/gamecontent.css")
+        loadCSS("/static/css/subjecthub/gamecontrol.css")
+        loadCSS("/static/css/subjecthub/game.css")
+        preloadImage("/static/images/subjecthub/daybg.png",() => {
+            persen += 2;
+            update_per(persen);
+        })
+        preloadImage("/static/images/subjecthub/nightbg.png",() => {
+            persen += 2;
+            update_per(persen);
+        })
+        preloadImage("/static/images/subjecthub/seed.png",() => {
+            persen += 2;
+            update_per(persen);
+        })
+    };
+</script>
+
+
+{% endblock %}

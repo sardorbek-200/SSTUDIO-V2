@@ -75,7 +75,6 @@ async def create_test_page(request: Request, db = Depends(get_db), access_token:
                 "background": user.background, "scoin": user.scoin
             }
         )
-        response.set_cookie(key="access_token", value=access_token, httponly=True)
         return response
     except Exception as e:
         return HTMLResponse(content=f"<h1>Tizim xatoligi: {str(e)}</h1>", status_code=500)

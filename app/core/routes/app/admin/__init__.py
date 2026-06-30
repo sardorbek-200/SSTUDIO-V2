@@ -72,7 +72,6 @@ async def admin_dashboard(
             "admin": is_admin
         }
     )
-    response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
 
 
@@ -125,7 +124,6 @@ async def manage_admins_page(
             "non_admins": non_admins
         }
     )
-    response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
 
 
@@ -215,7 +213,6 @@ async def admin_users(
             "users": users,
         }
     )
-    response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
 
 

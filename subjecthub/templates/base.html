@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sstudio - {{ title }}</title>
+    <link rel="shortcut icon" href="/static/icon/subjecthub.png" type="image/png" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.6s ease;
+            font-family: "Inter", "Montserrat", "Roboto", sans-serif !important;
+        }
+
+        a,
+        button {
+            cursor: pointer;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            padding: 3px 8px;
+        }
+
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #FFFFFF;
+        }
+
+        span,
+        p,
+        a {
+            color: #ffffff;
+        }
+
+        .text {
+            color: #ffffff;
+        }
+
+        body {
+            font-family: "Inter", "Montserrat", "Roboto", sans-serif;
+            width: 100%;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            height: auto;
+            background-attachment: fixed;
+            background-image: url('{{ background if background else "/static/images/default_bg.png" }}');
+            background-size: cover;
+            background-position: center;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 15px;
+            position: fixed !important;
+            top: 0;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 100%;
+        }
+
+        nav img {
+            width: 32px;
+            border-radius: 50%;
+        }
+
+        nav h1 {
+            font-size: 32px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 8px;
+            height: min-content;
+            justify-content: flex-start;
+            width: min-content;
+        }
+
+        a:hover {
+            box-shadow: #5A00C6 0px 0px 5px;
+            transform: scale(1.1, 1.1);
+            border-radius: 25px;
+        }
+
+        .glass-card {
+            width: 300px;
+            padding: 20px;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+            display: inline-block;
+        }
+
+        .glass-card h1,
+        .glass-card h2,
+        .glass-card h3,
+        .glass-card h4,
+        .glass-card h5,
+        .glass-card h6,
+        .glass-card span,
+        .glass-card p,
+        .glass-card a {
+            color: white !important;
+        }
+
+        .glass-card:hover {
+            border-radius: 50px;
+            transform: scale(1.1, 1.1);
+            box-shadow: #5A00C6 0 0 5px 5px;
+        }
+
+        .profile {
+            background-color: #5A00C6;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C9E6FF;
+            text-transform: uppercase;
+        }
+
+        .auth {
+            width: calc(32px*4);
+            height: 32px;
+            background-color: #5A00C6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C9E6FF;
+        }
+
+        .menyubar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            bottom: 20px;
+            max-width: 400px;
+            margin: 0;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            border: #0B1325 1px solid;
+            font-size: 1.3em;
+            padding: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .menyubar:hover {
+            border-radius: 4vh;
+            box-shadow: #004C6E 0px 0px 5px;
+        }
+
+        .menyubar a:hover {
+            color: #004C6E;
+            text-shadow: #004C6E 0px 0px 5px;
+        }
+
+        .highlightmenyubaritem {
+            color: #004C6E;
+            text-shadow: #004C6E 0px 0px 5px;
+        }
+
+        footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 15px 20vh 15px;
+            height: 8vh;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        .content {
+            margin-top: 10vh;
+            display: flex;
+            width: 100% !important;
+            flex-wrap: wrap;
+            gap: 20px;
+            flex: 1;
+            width: 90vw;
+            justify-content: center;
+            padding-bottom: 150px;
+        }
+
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .buy-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: #5A00C6;
+            color: #fff;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(90, 0, 198, 0.25);
+        }
+
+        .navdiv {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+    {% block style %}{% endblock %}
+</head>
+
+<body>
+    <nav>
+        <a href="/" class="home">
+            <img src="/static/icon/subjecthub.png" alt="" />
+            <h3>Sstudio</h3>
+        </a>
+        {% if status=="AUTHORIZED" %}
+        <div class="navdiv">
+            <a href="/auth/logout" class="logout-btn">Chiqish</a>
+            <a href="/profile/{{ username }}" class="profile">{{ username[0] }}</a>
+        </div>
+        {% else %}
+        <a href="/auth" class="auth">Kirish</a>
+        {% endif %}
+    </nav>
+    <div class="container">
+        <div class="content">{% block content %}{% endblock %}</div>
+
+    </div>
+    <footer
+        style="color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); margin-top: auto;">
+        <div>
+            <a href="/help">Yordam</a>
+            <a href="/about">Haqida</a>
+        </div>
+        <p>&copy; 2026 Sstudio. <span>Barcha huquqlar himoyalangan</span>.</p>
+    </footer>
+    <div class="menyubar">
+        <a href="/" {% if title=="Bosh sahifa" %}class="highlightmenyubaritem" {% endif %}>&#8962;</a>
+        <a href="/app" {% if title=="Ilovalar" %}class="highlightmenyubaritem" {% endif %}>&#8862;</a>
+        <a href="/users" {% if title=="Foydalanuvchilar" %}class="highlightmenyubaritem" {% endif %}>&#128100;</a>
+        <a href="/settings" {% if title=="Sozlamalar" %}class="highlightmenyubaritem" {% endif %}>&#9881;</a>
+    </div>
+    {% block js %}{% endblock %}
+</body>
+
+</html>

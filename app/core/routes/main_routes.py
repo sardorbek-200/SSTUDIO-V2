@@ -76,7 +76,6 @@ async def home_page(request: Request,db:AsyncSession=Depends(get_db),access_toke
         "background": user.background ,
         "title": "Bosh sahifa"
     })
-    response.set_cookie(key="access_token", value=dumps({"token": session.token}), httponly=True)
     return response
 
 @router.get("/profile/{username}", response_class=HTMLResponse)
@@ -125,9 +124,6 @@ async def profile_page(request: Request, username: str, db: AsyncSession = Depen
             "iframe_src": f"/users/{profile_user.id}"
         }
     )
-
-    if status == "AUTHORIZED" and token_str:
-        response.set_cookie(key="access_token", value=dumps({"token": token_str}), httponly=True)
 
     return response
 

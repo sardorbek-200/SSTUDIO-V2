@@ -37,7 +37,6 @@ async def play_test(request:Request,test_id: int,  db=Depends(get_db), access_to
         if not allowed_test:
             return {"error": "You are not allowed to take this test."}
     response =  templates.TemplateResponse(name="quizer/play.html",request=request, context={ "test": test,"title":"Quizer - Test Ishlash","theme":"dark", "lang":"uz","background":user.background, "username":user.username, "status":"AUTHORIZED"})
-    response.set_cookie(key="access_token",value=access_token,httponly=True)
     return response
 
 

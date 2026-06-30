@@ -80,7 +80,6 @@ async def quizer(request: Request, db = Depends(get_db), access_token: Annotated
         "theme": "dark",
         "background": user.background,
     })
-    response.set_cookie(key="access_token", value=dumps({"token": session.token}), httponly=True)
     return response
 
 

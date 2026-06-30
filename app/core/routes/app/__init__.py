@@ -27,5 +27,4 @@ async def apps(request: Request, db: UserToken = Depends(get_db), access_token: 
     user = user_query.scalar_one_or_none()
     is_admin = await checkadmin(db,user)
     response = templates.TemplateResponse(name = "apps.html",request= request, context = {"request": request, "status":"AUTHORIZED","user": user.username,"username":user.username,"title": "Ilovalar","background":user.background,"scoin":user.scoin, "admin":is_admin})
-    response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response

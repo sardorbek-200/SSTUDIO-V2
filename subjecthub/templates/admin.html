@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block style %}
+<style>
+    /* O'zingning glass-card stillaring */
+    .admin-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 90%;
+        max-width: 1000px;
+        margin: 0 auto;
+        color: white;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    input {
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        background: blueviolet;
+        color: white;
+        cursor: pointer;
+    }
+
+    button.danger {
+        background: #ff4757;
+    }
+
+    button.edit {
+        background: #fca311;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nohover:hover {
+        transform: scale(1, 1);
+    }
+
+    .spinner {
+        width: 30px;
+        height: 30px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="glass-card">
+        <h2 id="formTitle">Yangi Savol Qo'shish</h2>
+        <form id="questionForm">
+            <input type="hidden" id="q_id">
+
+            <div class="form-group">
+                <label>Savol matni:</label>
+                <input type="text" id="q_text" required>
+            </div>
+            <div class="form-group">
+                <label>Fan nomi:</label>
+                <input type="text" id="q_subject" required>
+            </div>
+            <div class="form-group">
+                <label>Variantlar (vergul bilan ajrating):</label>
+                <input type="text" id="q_options" placeholder="A, B, C, D" required>
+            </div>
+            <div class="form-group">
+                <label>To'g'ri javob:</label>
+                <input type="text" id="q_correct" required>
+            </div>
+
+            <button type="submit" id="submitBtn">Saqlash</button>
+            <button type="button" class="danger" style="display:none;" id="cancelBtn" onclick="resetForm()">Bekor
+                qilish</button>
+        </form>
+    </div>
+
+    <div class="glass-card">
+        <h3>AI Savol Generatori</h3>
+        <div style="display: flex; gap: 10px; flex-direction: column;">
+            <input type="text" id="ai_topic" placeholder="Mavzu (masalan: Algebra)">
+            <input type="number" id="ai_count" placeholder="Savollar soni">
+            <button onclick="generateAI()" class="edit">Generatsiya qilish</button>
+            <button id="ai-btn" onclick="generateAI()" class="edit">AI bilan yaratish</button>
+            <div id="loading-spinner" style="display: none; margin-top: 10px;">
+                <div class="spinner"></div>
+                <p>Savollar generatsiya qilinmoqda, iltimos kuting...</p>
+            </div>
+        </div>
+    </div>
+    <div class="glass-card nohover" style="width: fit-content;overflow: auto; height: 120vh;">
+        <h2>Mavjud Savollar</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fan</th>
+                    <th>Savol</th>
+                    <th>Amal</th>
+                </tr>
+            </thead>
+            <tbody id="questionsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    async function generateAI() {
+        const btn = document.getElementById('ai-btn');
+        const spinner = document.getElementById('loading-spinner');
+
+        // UI holatini o'zgartirish
+        btn.disabled = true;
+        spinner.style.display = 'block';
+
+        const payload = {
+            topic: document.getElementById('ai_topic').value,
+            count: document.getElementById('ai_count').value
+        };
+
+        try {
+            const res = await fetch('/api/admin/questions/generate-ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Savollar muvaffaqiyatli bazaga qo'shildi!");
+                loadQuestions(); // Jadvalni yangilash
+            } else {
+                alert("Xatolik yuz berdi!");
+            }
+        } catch (err) {
+            alert("Server bilan aloqa uzildi!");
+        } finally {
+            // Har qanday holatda tugmani qayta tiklash
+            btn.disabled = false;
+            spinner.style.display = 'none';
+        }
+    }
+</script>
+
+<script>
+    const API_URL = '/api/admin/questions/';
+    let currentQuestions = []; // Tahrirlash uchun ma'lumotlarni saqlab turamiz
+
+    async function loadQuestions() {
+        try {
+            const res = await fetch(API_URL);
+            currentQuestions = await res.json();
+
+            const tbody = document.getElementById('questionsTableBody');
+            tbody.innerHTML = '';
+
+            currentQuestions.forEach(q => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${q.id}</td>
+                        <td>${q.subject}</td>
+                        <td>${q.text}</td>
+                        <td>
+                            <button class="edit" onclick="editQuestion(${q.id})">Tahrir</button>
+                            <button class="danger" onclick="deleteQuestion(${q.id})">O'chirish</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) { console.error(error); }
+    }
+
+    // Tahrirlash tugmasi bosilganda formaga ma'lumotlarni to'ldirish
+    function editQuestion(id) {
+        const q = currentQuestions.find(x => x.id === id);
+        if (!q) return;
+
+        document.getElementById('q_id').value = q.id;
+        document.getElementById('q_text').value = q.text;
+        document.getElementById('q_subject').value = q.subject;
+        document.getElementById('q_options').value = q.options.join(', '); // Arrayni stringga qaytaramiz
+        document.getElementById('q_correct').value = q.correct_answer;
+
+        document.getElementById('formTitle').innerText = "Savolni Tahrirlash";
+        document.getElementById('cancelBtn').style.display = "inline-block";
+    }
+
+    // Formani tozalash (Create rejimiga qaytish)
+    function resetForm() {
+        document.getElementById('questionForm').reset();
+        document.getElementById('q_id').value = "";
+        document.getElementById('formTitle').innerText = "Yangi Savol Qo'shish";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const qId = document.getElementById('q_id').value;
+        const optionsArray = document.getElementById('q_options').value.split(',').map(item => item.trim());
+
+        const payload = {
+            text: document.getElementById('q_text').value,
+            subject: document.getElementById('q_subject').value,
+            options: optionsArray,
+            correct_answer: document.getElementById('q_correct').value.trim(),
+        };
+
+        try {
+            const method = qId ? 'PUT' : 'POST'; // Agar ID bo'lsa PUT (edit), yo'qsa POST (create)
+            const url = qId ? API_URL + qId : API_URL;
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                resetForm();
+                loadQuestions();
+            }
+        } catch (error) { console.error(error); }
+    });
+
+    async function deleteQuestion(id) {
+        if (!confirm("O'chirasizmi?")) return;
+        try {
+            const res = await fetch(API_URL + id, { method: 'DELETE' });
+            if (res.ok) loadQuestions();
+        } catch (error) { console.error(error); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadQuestions);
+</script>
+{% endblock %}
